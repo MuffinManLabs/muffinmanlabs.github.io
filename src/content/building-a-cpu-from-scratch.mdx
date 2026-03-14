@@ -1,0 +1,50 @@
+---
+title: "Building a Virtual CPU From Scratch"
+date: "2026-03-14"
+readTime: "8 min read"
+tag: "Systems"
+excerpt: "What I learned by implementing a virtual CPU in Python and then rewriting it in C — registers, instruction sets, and all."
+---
+
+# Building a Virtual CPU From Scratch
+
+One of the most eye-opening projects I've worked on is building a virtual CPU — first in Python, then rewriting it in C. Here's what I learned along the way.
+
+## What Is a Virtual CPU?
+
+A virtual CPU is a software simulation of a processor. It has registers, memory, a program counter, and an instruction set — just like a real CPU, but implemented entirely in code.
+
+## The Architecture
+
+The CPU I built has:
+
+- **8 general-purpose registers** (R0-R7)
+- **A stack pointer** and **program counter**
+- **256 bytes of memory** (small, but enough to learn)
+- **A custom instruction set** with ~20 instructions
+
+## Key Instructions
+
+```
+LOAD  R0, 42    ; Load immediate value into register
+ADD   R0, R1    ; Add two registers
+STORE R0, 0xFF  ; Store register value to memory
+JMP   0x10      ; Jump to address
+CMP   R0, R1    ; Compare two registers
+JEQ   0x20      ; Jump if equal
+```
+
+## Lessons Learned
+
+The biggest takeaway? **Everything is just numbers.** Instructions are numbers. Addresses are numbers. Characters are numbers. Understanding this at a deep level changes how you think about every program you write.
+
+## From Python to C
+
+Rewriting the CPU in C was a completely different experience. In Python, I could focus purely on the logic. In C, I had to think about:
+
+- Memory layout and alignment
+- Pointer arithmetic
+- Manual memory management
+- The exact size of every data type
+
+But that's exactly why C is the perfect language for systems programming — it forces you to think like the machine.

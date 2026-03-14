@@ -1,0 +1,45 @@
+---
+title: "C Memory Management: Lessons From the Trenches"
+date: "2026-03-14"
+readTime: "6 min read"
+tag: "C"
+excerpt: "Everything I wish I knew about malloc, free, and Valgrind before I started writing C. A practical guide to not leaking memory."
+---
+
+# C Memory Management: Lessons From the Trenches
+
+If you're learning C, memory management is the boss fight. Here's everything I wish I knew before I started.
+
+## The Stack vs. The Heap
+
+In C, memory lives in two places:
+
+- **The stack**: automatic, fast, limited. Variables declared in functions live here.
+- **The heap**: manual, flexible, dangerous. You allocate with `malloc()`, free with `free()`.
+
+## The Golden Rules
+
+1. **Every `malloc` needs a `free`.** No exceptions.
+2. **Never use memory after freeing it.** Use-after-free is a real vulnerability class.
+3. **Never free the same pointer twice.** Double-free corrupts the heap.
+4. **Always check if `malloc` returns NULL.** It can fail.
+
+## Valgrind Is Your Best Friend
+
+Valgrind is a tool that tracks every byte of memory your program touches. Run your program through it and it will tell you:
+
+- Memory leaks (allocated but never freed)
+- Invalid reads/writes (accessing freed or uninitialized memory)
+- Use of uninitialized values
+
+Getting "0 errors, 0 leaks" from Valgrind is one of the most satisfying feelings in programming.
+
+## Memory Ownership
+
+The hardest concept in C memory management isn't `malloc` or `free` — it's **ownership**. When you pass a pointer to a function, who's responsible for freeing it? The caller? The callee?
+
+Establish clear ownership rules in your code and document them. Your future self will thank you.
+
+## What's Next
+
+I'm currently working on implementing my own memory allocator — `malloc` and `free` from scratch using system calls. Stay tuned for that write-up.
