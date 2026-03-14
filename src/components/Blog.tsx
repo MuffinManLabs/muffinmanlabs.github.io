@@ -1,4 +1,6 @@
 import Link from "next/link";
+import ScrambleText from "./ScrambleText";
+import ScrollFadeIn from "./ScrollFadeIn";
 
 const posts = [
   {
@@ -7,71 +9,61 @@ const posts = [
     excerpt:
       "A first post about my journey into systems programming and why I decided to start writing about it.",
     date: "2026-03-14",
-    readTime: "3 min read",
-    tag: "General",
   },
   {
     slug: "building-a-cpu-from-scratch",
     title: "Building a Virtual CPU From Scratch",
     excerpt:
-      "What I learned by implementing a virtual CPU in Python and then rewriting it in C — registers, instruction sets, and all.",
+      "What I learned by implementing a virtual CPU in Python and then rewriting it in C.",
     date: "2026-03-14",
-    readTime: "8 min read",
-    tag: "Systems",
   },
   {
     slug: "c-memory-management",
     title: "C Memory Management: Lessons From the Trenches",
     excerpt:
-      "Everything I wish I knew about malloc, free, and Valgrind before I started writing C. A practical guide to not leaking memory.",
+      "Everything I wish I knew about malloc, free, and Valgrind before I started writing C.",
     date: "2026-03-14",
-    readTime: "6 min read",
-    tag: "C",
   },
 ];
 
 export default function Blog() {
   return (
-    <section id="blog" className="relative py-32 px-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <p className="text-sm uppercase tracking-[0.2em] text-violet-400 font-mono mb-4">
-            Blog
-          </p>
-          <h2 className="text-4xl sm:text-5xl font-bold text-zinc-100 tracking-tight">
-            Thoughts &amp; learnings.
-          </h2>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          {posts.map((post) => (
-            <Link
-              key={post.slug}
-              href={`/blog/${post.slug}`}
-              className="group block p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:border-zinc-700"
+    <section id="blog" className="relative py-20 px-8">
+      <ScrollFadeIn>
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-12">
+            <p className="font-mono text-xs text-[#a855f7] tracking-widest uppercase mb-3">
+              // blog
+            </p>
+            <h2
+              className="text-3xl sm:text-4xl font-bold text-[#f0f0f0]"
+              style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
             >
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-xs px-2.5 py-1 bg-violet-500/10 text-violet-400 rounded-full">
-                  {post.tag}
-                </span>
-                <span className="text-xs text-zinc-600">{post.readTime}</span>
-              </div>
-              <h3 className="text-lg font-semibold text-zinc-100 mb-3 group-hover:text-violet-300 transition-colors">
-                {post.title}
-              </h3>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-4">
-                {post.excerpt}
-              </p>
-              <div className="flex items-center justify-between">
-                <time className="text-xs text-zinc-600">{post.date}</time>
-                <span className="text-sm text-violet-400 group-hover:translate-x-1 transition-transform duration-200">
-                  Read &rarr;
-                </span>
-              </div>
-            </Link>
-          ))}
+              <ScrambleText text="Blog" />
+            </h2>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => (
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                className="group block border border-[#00ff41]/10 hover:border-[#00ff41]/30 p-6 transition-all duration-300 hover:bg-[#00ff41]/[0.02]"
+              >
+                <time className="font-mono text-[10px] text-[#a855f7]/60 tracking-wider">
+                  {post.date}
+                </time>
+                <h3 className="font-mono text-sm text-[#e0e0e0]/90 mt-2 mb-3 group-hover:text-[#00ff41] transition-colors duration-300 leading-snug">
+                  {post.title}
+                </h3>
+                <p className="font-mono text-xs text-[#e0e0e0]/40 leading-relaxed">
+                  {post.excerpt}
+                </p>
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      </ScrollFadeIn>
     </section>
   );
 }

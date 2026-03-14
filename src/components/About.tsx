@@ -1,80 +1,65 @@
-const skills = [
-  { category: "Languages", items: ["C", "Python", "TypeScript"] },
-  { category: "Focus Areas", items: ["Systems Programming", "OS Development", "Compiler Design"] },
-  { category: "Interests", items: ["Binary Security", "Reverse Engineering", "Low-Level Tools"] },
+import ScrambleText from "./ScrambleText";
+import ScrollFadeIn from "./ScrollFadeIn";
+
+const tools = [
+  "Ghidra",
+  "x64dbg",
+  "IDA",
+  "Python",
+  "Assembly",
+  "Windows Internals",
 ];
 
 export default function About() {
   return (
-    <section id="about" className="relative py-32 px-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-16 items-start">
-          {/* Left column */}
-          <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-violet-400 font-mono mb-4">
-              About
+    <section id="about" className="relative py-20 px-8">
+      <ScrollFadeIn>
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-12">
+            <p className="font-mono text-xs text-[#a855f7] tracking-widest uppercase mb-3">
+              // about
             </p>
-            <h2 className="text-4xl sm:text-5xl font-bold text-zinc-100 mb-8 tracking-tight">
-              Close to the
-              <br />
-              <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
-                metal.
-              </span>
+            <h2
+              className="text-3xl sm:text-4xl font-bold text-[#f0f0f0]"
+              style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
+            >
+              <ScrambleText text="About Me" />
             </h2>
-            <p className="text-zinc-400 leading-relaxed text-lg mb-6">
-              I&apos;m passionate about understanding how computers actually work
-              &mdash; not through layers of abstraction, but by building things
-              from scratch. From virtual CPUs to memory allocators, I believe the
-              best way to learn is to build.
+          </div>
+
+          <div className="space-y-6 font-mono text-sm leading-7 text-[#e0e0e0]/70 max-w-3xl">
+            <p>
+              I&apos;m an aspiring reverse engineer and malware analyst, breaking
+              down binaries and studying how software really works under the
+              hood. I believe in learning by doing — building tools, analyzing
+              samples, and documenting every step of the journey.
             </p>
-            <p className="text-zinc-500 leading-relaxed">
-              Currently deep in systems programming with C, working my way toward
-              OS development, compiler design, and binary security research. Every
-              project is a step closer to mastering the machine.
+            <p>
+              This site is where I share writeups, tool walkthroughs, and
+              project breakdowns as I work my way deeper into binary analysis,
+              exploit development, and Windows internals. Everything here is
+              built in public — mistakes, breakthroughs, and all.
             </p>
           </div>
 
-          {/* Right column - Skills */}
-          <div className="space-y-8">
-            {skills.map((group) => (
-              <div key={group.category}>
-                <h3 className="text-xs uppercase tracking-[0.2em] text-zinc-500 mb-4 font-mono">
-                  {group.category}
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {group.items.map((item) => (
-                    <span
-                      key={item}
-                      className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-300 hover:border-violet-500/50 hover:text-violet-300 transition-all duration-300"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 pt-4">
-              {[
-                { value: "7+", label: "Projects" },
-                { value: "3", label: "Languages" },
-                { value: "∞", label: "Curiosity" },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="text-center p-4 bg-zinc-900/50 border border-zinc-800/50 rounded-xl"
+          {/* Tools/Skills */}
+          <div className="mt-12">
+            <p className="font-mono text-xs text-[#00ff41]/40 tracking-widest uppercase mb-4">
+              &gt; tools &amp;&amp; skills
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {tools.map((tool) => (
+                <span
+                  key={tool}
+                  className="px-4 py-2 text-xs font-mono text-[#00ff41]/70 border border-[#00ff41]/15 hover:border-[#00ff41]/40 hover:text-[#00ff41] transition-all duration-300"
                 >
-                  <div className="text-2xl font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
-                    {stat.value}
-                  </div>
-                  <div className="text-xs text-zinc-500 mt-1">{stat.label}</div>
-                </div>
+                  {tool}
+                </span>
               ))}
             </div>
           </div>
         </div>
-      </div>
+      </ScrollFadeIn>
     </section>
   );
 }

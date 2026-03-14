@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import ClientLayout from "@/components/ClientLayout";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,9 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Muffin Man Labs",
-  description:
-    "Systems programming, low-level development, and building things from scratch.",
+  title: "Ray Malik | MuffinManLabs",
+  description: "Reversing binaries. Hunting malware. Learning in public.",
 };
 
 export default function RootLayout({
@@ -28,11 +26,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#050505] text-zinc-100`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a0a0a] text-[#e0e0e0]`}
       >
-        <Header />
-        <main className="relative z-10">{children}</main>
-        <Footer />
+        <div
+          dangerouslySetInnerHTML={{
+            __html:
+              "<!-- You know how to inspect element? You might belong here. Reach out: hurayrah92@gmail.com -->",
+          }}
+        />
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

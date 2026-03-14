@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import Link from "next/link";
 
 const contentDir = path.join(process.cwd(), "src/content");
 
@@ -35,51 +34,47 @@ export default async function BlogPost({
 
   if (!post) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center font-mono">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-zinc-100 mb-4">
+          <h1 className="text-4xl font-bold text-[#e0e0e0] mb-4">
             Post not found
           </h1>
-          <Link
+          <a
             href="/#blog"
-            className="text-violet-400 hover:text-violet-300 transition-colors"
+            className="text-[#00ff41] hover:text-[#00ff41]/80 transition-colors"
           >
-            &larr; Back to blog
-          </Link>
+            &larr; cd ../blog
+          </a>
         </div>
       </div>
     );
   }
 
-  // Dynamic import of the MDX file
   const MDXContent = (await import(`@/content/${slug}.mdx`)).default;
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-6">
+    <div className="min-h-screen pt-28 pb-24 px-8">
       <article className="max-w-3xl mx-auto">
-        <Link
+        <a
           href="/#blog"
-          className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-violet-400 transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-sm font-mono text-[#00ff41]/40 hover:text-[#00ff41] transition-colors duration-300 mb-10"
         >
-          &larr; Back to blog
-        </Link>
+          <span className="text-[#a855f7]">&gt;</span> cd ../blog
+        </a>
 
-        <header className="mb-12">
-          {post.frontmatter.tag && (
-            <span className="text-xs px-2.5 py-1 bg-violet-500/10 text-violet-400 rounded-full">
-              {post.frontmatter.tag}
-            </span>
-          )}
-          <h1 className="text-4xl sm:text-5xl font-bold text-zinc-100 mt-4 mb-4 tracking-tight">
-            {post.frontmatter.title}
-          </h1>
-          <div className="flex items-center gap-4 text-sm text-zinc-500">
-            <time>{post.frontmatter.date}</time>
-            {post.frontmatter.readTime && (
-              <span>{post.frontmatter.readTime}</span>
-            )}
-          </div>
-        </header>
+        <h1
+          className="text-3xl sm:text-4xl font-bold text-[#e0e0e0] mb-4 tracking-tight leading-tight"
+          style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
+        >
+          {post.frontmatter.title}
+        </h1>
+
+        <time className="block text-xs font-mono text-[#00ff41]/30 mb-10">
+          {post.frontmatter.date}
+          {post.frontmatter.readTime && ` · ${post.frontmatter.readTime}`}
+        </time>
+
+        <div className="terminal-divider mb-10" />
 
         <div className="prose prose-invert max-w-none">
           <MDXContent />
