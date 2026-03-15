@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 
-const CHARS = "0123456789ABCDEFmovpushjmpcallretxornop{}[];:";
+const CHARS = "0123456789ABCDEFvolatileuint32_t*GPIOABSRRmovr0r1ldr[]->;";
 
 export default function ScrambleText({
   text,

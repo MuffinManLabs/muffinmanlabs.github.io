@@ -2,12 +2,18 @@ import ScrambleText from "./ScrambleText";
 import ScrollFadeIn from "./ScrollFadeIn";
 
 const tools = [
-  "Ghidra",
-  "x64dbg",
-  "IDA",
+  "C",
+  "ARM Assembly",
+  "RTOS",
+  "STM32",
+  "JTAG",
+  "SPI",
+  "I2C",
+  "UART",
   "Python",
-  "Assembly",
-  "Windows Internals",
+  "Linux",
+  "Embedded Linux",
+  "Bare Metal Programming",
 ];
 
 export default function About() {
@@ -29,16 +35,15 @@ export default function About() {
 
           <div className="space-y-6 font-mono text-sm leading-7 text-[#e0e0e0]/70 max-w-3xl">
             <p>
-              I&apos;m an aspiring reverse engineer and malware analyst, breaking
-              down binaries and studying how software really works under the
-              hood. I believe in learning by doing — building tools, analyzing
-              samples, and documenting every step of the journey.
-            </p>
-            <p>
-              This site is where I share writeups, tool walkthroughs, and
-              project breakdowns as I work my way deeper into binary analysis,
-              exploit development, and Windows internals. Everything here is
-              built in public — mistakes, breakthroughs, and all.
+              I&apos;m an aspiring embedded systems software engineer and firmware
+              engineer, working as close to the hardware as possible. I write C,
+              talk to peripherals over SPI and I2C, and debug with JTAG probes
+              instead of print statements. I believe the best way to learn is by
+              building — bare metal drivers, RTOS tasks, and custom firmware from
+              scratch. This site is where I document that journey through
+              writeups, project breakdowns, and deep dives into low-level
+              systems. Everything here is built in public — mistakes,
+              breakthroughs, and all.
             </p>
           </div>
 

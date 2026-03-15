@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Ray Malik | MuffinManLabs",
-  description: "Reversing binaries. Hunting malware. Learning in public.",
+  description: "Embedded systems engineer. Close to the hardware.",
 };
 
 export default function RootLayout({
@@ -31,7 +31,7 @@ export default function RootLayout({
         <div
           dangerouslySetInnerHTML={{
             __html:
-              "<!-- You know how to inspect element? You might belong here. Reach out: hurayrah92@gmail.com -->",
+              "<!-- You found the debug port. Nice. Reach out: hurayrah92@gmail.com -->",
           }}
         />
         <ClientLayout>{children}</ClientLayout>

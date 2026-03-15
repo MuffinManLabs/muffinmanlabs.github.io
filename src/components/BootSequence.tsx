@@ -3,19 +3,18 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 const bootMessages = [
-  "BIOS POST... OK",
-  "Initializing system...",
-  "Loading kernel modules...",
-  "Mounting /dev/memory...",
-  "Checking file integrity... OK",
-  "Scanning memory: 0x00000000 - 0xFFFFFFFF",
-  "Loading PE parser...",
-  "Initializing disassembler...",
-  "Running threat analysis...",
-  "No threats detected.",
+  "Power-on reset... OK",
+  "Initializing HAL...",
+  "Configuring GPIO pins...",
+  "Starting RTOS scheduler...",
+  "Mounting filesystem...",
+  "SPI bus initialized... OK",
+  "I2C peripherals detected: 3",
+  "UART0 @ 115200 baud... OK",
+  "Loading firmware v1.0...",
   "",
-  "Welcome to MuffinManLabs",
-  "Access granted.",
+  "System ready.",
+  "Welcome to MuffinManLabs.",
 ];
 
 function sleep(ms: number) {

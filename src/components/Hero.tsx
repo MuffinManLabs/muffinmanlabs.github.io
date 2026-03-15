@@ -52,7 +52,7 @@ export default function Hero() {
 
         {/* Tagline */}
         <p className="text-base sm:text-lg font-mono text-[#a855f7]/80 tracking-wide max-w-2xl mx-auto leading-relaxed">
-          Reversing binaries. Hunting malware. Reverse engineering noob (for now).
+          Embedded systems engineer. Close to the hardware.
         </p>
       </div>
     </section>

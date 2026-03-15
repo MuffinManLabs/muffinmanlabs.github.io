@@ -8,18 +8,22 @@ interface TermLine {
 }
 
 const HELP_TEXT = `Available commands:
-  help      Show this message
-  whoami    Display current user
-  ls        List site sections
-  cat       Read a file (try: about.txt)
-  clear     Clear terminal
-  exit      Close terminal
-  rm -rf    You wouldn't dare...`;
+  help        Show this message
+  whoami      Display current user
+  ls          List site sections
+  cat         Read a file (try: about.txt)
+  flash       Flash firmware to target
+  gpio set    Set a GPIO pin (try: gpio set 13)
+  clear       Clear terminal
+  exit        Close terminal
+  rm -rf      You wouldn't dare...`;
 
-const ABOUT_TEXT = `Ray Malik — aspiring reverse engineer and malware analyst.
-Breaking down binaries, studying Windows internals, and
-building tools from scratch. Learning in public at
-MuffinManLabs. Reach out: hurayrah92@gmail.com`;
+const ABOUT_TEXT = `Ray Malik — aspiring embedded systems software engineer
+and firmware engineer. Writing C, talking to peripherals
+over SPI and I2C, debugging with JTAG probes. Building
+bare metal drivers, RTOS tasks, and custom firmware from
+scratch. Learning in public at MuffinManLabs.
+Reach out: hurayrah92@gmail.com`;
 
 const LS_TEXT = `drwxr-xr-x  home/
 drwxr-xr-x  about/
@@ -47,18 +51,27 @@ export default function SecretTerminal() {
       if (trimmed === "help") {
         addOutput(HELP_TEXT);
       } else if (trimmed === "whoami") {
-        addOutput("visitor@muffinmanlabs");
+        addOutput("engineer@muffinmanlabs");
       } else if (trimmed === "ls") {
         addOutput(LS_TEXT);
       } else if (trimmed === "cat about.txt") {
         addOutput(ABOUT_TEXT);
+      } else if (trimmed === "flash") {
+        addOutput("Connecting via JTAG...\nErasing flash...\nWriting firmware...\nVerifying checksum... OK\nFlashing firmware... done.");
+      } else if (trimmed.startsWith("gpio set")) {
+        const pin = trimmed.replace("gpio set", "").trim();
+        if (pin) {
+          addOutput(`Pin ${pin} set HIGH. LED on.`);
+        } else {
+          addOutput("Usage: gpio set <pin>");
+        }
       } else if (trimmed === "clear") {
         setLines([]);
       } else if (trimmed === "exit") {
         setOpen(false);
         setLines([]);
       } else if (trimmed.startsWith("rm -rf") || trimmed.startsWith("rm -r")) {
-        addOutput("Initiating system destruction...");
+        addOutput("Corrupting firmware image...");
         setDestroying(true);
       } else if (trimmed === "") {
         // do nothing
@@ -108,59 +121,53 @@ export default function SecretTerminal() {
     }
   }, [lines]);
 
-  // rm -rf destruction effect
+  // rm -rf bricking effect
   useEffect(() => {
     if (!destroying) return;
 
-    const el = document.documentElement;
+    // Hide everything except the terminal overlay
     const allElements = Array.from(
       document.body.querySelectorAll("*:not(.secret-terminal):not(.secret-terminal *)")
     ) as HTMLElement[];
 
-    // Reverse so we delete from bottom up
-    allElements.reverse();
+    // Quick fade everything to black
+    allElements.forEach((el) => {
+      el.style.opacity = "0";
+      el.style.transition = "opacity 0.3s ease-out";
+    });
 
-    let i = 0;
-    const interval = setInterval(() => {
-      const batch = 8;
-      for (let j = 0; j < batch && i < allElements.length; j++, i++) {
-        allElements[i].style.opacity = "0";
-        allElements[i].style.transform = "translateX(40px)";
-        allElements[i].style.transition = "all 0.15s ease-out";
-      }
+    setTimeout(() => {
+      setLines([
+        { type: "output", text: "" },
+        { type: "output", text: "ERROR: Firmware corrupted. Device bricked." },
+      ]);
 
-      if (i >= allElements.length) {
-        clearInterval(interval);
+      setTimeout(() => {
+        setLines((prev) => [
+          ...prev,
+          { type: "output", text: "" },
+          { type: "output", text: "Just kidding. Rebooting..." },
+        ]);
+
         setTimeout(() => {
-          document.body.style.background = "#0a0a0a";
-          setLines([
-            { type: "output", text: "" },
-            {
-              type: "output",
-              text: "System destroyed. Just kidding.",
-            },
-            { type: "output", text: "" },
-            { type: "output", text: "Reloading in 3..." },
-          ]);
-
-          setTimeout(() => {
-            // Restore everything
-            allElements.forEach((el) => {
-              el.style.opacity = "";
-              el.style.transform = "";
-              el.style.transition = "";
-            });
+          allElements.forEach((el) => {
             el.style.opacity = "";
-            setDestroying(false);
-            setOpen(false);
-            setLines([]);
-            window.scrollTo(0, 0);
-          }, 3000);
-        }, 500);
-      }
-    }, 50);
+            el.style.transition = "";
+          });
+          setDestroying(false);
+          setOpen(false);
+          setLines([]);
+          window.scrollTo(0, 0);
+        }, 3000);
+      }, 2000);
+    }, 500);
 
-    return () => clearInterval(interval);
+    return () => {
+      allElements.forEach((el) => {
+        el.style.opacity = "";
+        el.style.transition = "";
+      });
+    };
   }, [destroying]);
 
   if (!open) return null;
@@ -179,7 +186,7 @@ export default function SecretTerminal() {
         {/* Title bar */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-[#00ff41]/20">
           <span className="font-mono text-xs text-[#00ff41]/60">
-            visitor@muffinmanlabs:~$
+            engineer@muffinmanlabs:~$
           </span>
           {!destroying && (
             <button

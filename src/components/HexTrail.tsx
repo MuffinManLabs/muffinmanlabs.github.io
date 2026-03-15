@@ -2,9 +2,19 @@
 
 import { useEffect, useRef } from "react";
 
-const PE_BYTES = [
-  "4D", "5A", "90", "00", "03", "FF", "A8", "B8",
-  "40", "50", "45", "0E", "1F", "4C", "01", "CC",
+const REGISTER_ADDRS = [
+  "0x40021000", "0x40020000", "0x40020400", "0x08000000",
+  "0x20000000", "0x40013800", "0x40005400", "0xE000ED00",
+];
+
+const REGISTER_NAMES = [
+  "GPIOA->ODR", "GPIOA->BSRR", "RCC->AHB1ENR", "GPIOB->MODER",
+  "TIM2->CR1", "SPI1->DR", "I2C1->CR1", "USART1->BRR",
+];
+
+const HEX_VALUES = [
+  "0xDEADBEEF", "0xCAFEBABE", "0x00000001", "0xFFFFFFFF",
+  "0x48000400", "0x40004400",
 ];
 
 interface Particle {
@@ -16,18 +26,14 @@ interface Particle {
 }
 
 function randomHex(): string {
-  const bytes: string[] = [];
-  for (let i = 0; i < 4; i++) {
-    bytes.push(
-      Math.random() > 0.5
-        ? PE_BYTES[Math.floor(Math.random() * PE_BYTES.length)]
-        : Math.floor(Math.random() * 256)
-            .toString(16)
-            .toUpperCase()
-            .padStart(2, "0")
-    );
+  const r = Math.random();
+  if (r < 0.35) {
+    return REGISTER_ADDRS[Math.floor(Math.random() * REGISTER_ADDRS.length)];
+  } else if (r < 0.7) {
+    return REGISTER_NAMES[Math.floor(Math.random() * REGISTER_NAMES.length)];
+  } else {
+    return HEX_VALUES[Math.floor(Math.random() * HEX_VALUES.length)];
   }
-  return bytes.join(" ");
 }
 
 export default function HexTrail() {

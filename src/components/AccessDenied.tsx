@@ -37,8 +37,8 @@ export default function AccessDenied() {
       style={style}
       className="bg-[#0a0a0a] border border-[#00ff41]/40 px-5 py-3 font-mono text-xs text-[#00ff41] shadow-lg shadow-[#00ff41]/5 animate-[fadeInOut_2s_ease-in-out_forwards]"
     >
-      <span className="text-[#ff4141] font-bold">ACCESS DENIED</span>
-      <span className="text-[#00ff41]/60"> — unauthorized inspection detected</span>
+      <span className="text-[#ff4141] font-bold">WARNING</span>
+      <span className="text-[#00ff41]/60"> — Debug interface locked. JTAG access denied.</span>
     </div>
   );
 }
