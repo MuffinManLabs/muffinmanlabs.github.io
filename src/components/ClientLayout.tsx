@@ -9,6 +9,7 @@ import BootSequence from "@/components/BootSequence";
 import AccessDenied from "@/components/AccessDenied";
 import SecretTerminal from "@/components/SecretTerminal";
 import GlitchEffect from "@/components/GlitchEffect";
+import CircuitTraces from "@/components/CircuitTraces";
 
 export default function ClientLayout({
   children,
@@ -38,6 +39,7 @@ export default function ClientLayout({
       )}
       {ready && !booted && <BootSequence onComplete={handleBootComplete} />}
       <HexTrail />
+      <CircuitTraces />
       <Header />
       <main className="relative z-10">{children}</main>
       <Footer />

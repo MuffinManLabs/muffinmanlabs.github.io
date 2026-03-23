@@ -158,6 +158,29 @@ body::before {
   animation: pic-glitch 0.3s steps(1) infinite;
 }
 
+/* Project card hover scanlines */
+.project-scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 255, 65, 0.06) 3px,
+    rgba(0, 255, 65, 0.06) 6px
+  );
+}
+
+.project-card {
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.project-card:hover {
+  background-color: rgba(0, 255, 65, 0.03);
+  box-shadow:
+    0 0 20px rgba(0, 255, 65, 0.15),
+    0 0 40px rgba(0, 255, 65, 0.05),
+    inset 0 0 20px rgba(0, 255, 65, 0.02);
+}
+
 .profile-pic-glitch:hover::after {
   content: "";
   position: absolute;
@@ -172,4 +195,48 @@ body::before {
   );
   mix-blend-mode: overlay;
   animation: pic-glitch 0.2s steps(2) infinite;
+}
+
+/* Chip pinout idle animations */
+.chip-power-pulse {
+  animation: chipPowerPulse 3s ease-in-out infinite;
+}
+
+.chip-led-blink {
+  animation: chipLedBlink 2s ease-in-out infinite;
+}
+
+@keyframes chipPowerPulse {
+  0%, 100% { box-shadow: 0 0 4px var(--pin-glow); }
+  50% { box-shadow: 0 0 8px var(--pin-glow), 0 0 14px var(--pin-glow); }
+}
+
+@keyframes chipLedBlink {
+  0%, 42%, 58%, 100% { box-shadow: 0 0 4px var(--pin-glow); }
+  50% { box-shadow: 0 0 10px var(--pin-glow), 0 0 20px var(--pin-glow); }
+}
+
+/* Data flow dot animations */
+@keyframes chipDotLtoR {
+  0% { left: -3px; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { left: calc(100% - 3px); opacity: 0; }
+}
+
+@keyframes chipDotRtoL {
+  0% { left: calc(100% - 3px); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { left: -3px; opacity: 0; }
+}
+
+/* LED indicator on chip body and external LED component */
+.chip-led-indicator {
+  animation: chipLedIndicator 2s ease-in-out infinite;
+}
+
+@keyframes chipLedIndicator {
+  0%, 40%, 60%, 100% { opacity: 0.3; box-shadow: 0 0 2px var(--pin-glow); }
+  50% { opacity: 1; box-shadow: 0 0 6px var(--pin-glow), 0 0 12px var(--pin-glow); }
 }

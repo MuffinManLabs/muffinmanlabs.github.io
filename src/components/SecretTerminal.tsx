@@ -18,12 +18,10 @@ const HELP_TEXT = `Available commands:
   exit        Close terminal
   rm -rf      You wouldn't dare...`;
 
-const ABOUT_TEXT = `Ray Malik — aspiring embedded systems software engineer
-and firmware engineer. Writing C, talking to peripherals
-over SPI and I2C, debugging with JTAG probes. Building
-bare metal drivers, RTOS tasks, and custom firmware from
-scratch. Learning in public at MuffinManLabs.
-Reach out: hurayrah92@gmail.com`;
+const ABOUT_TEXT = `MuffinManLabs — embedded systems and firmware engineering.
+Writing C, talking to peripherals over SPI and I2C,
+debugging with JTAG probes. Building bare metal drivers,
+RTOS tasks, and custom firmware from scratch.`;
 
 const LS_TEXT = `drwxr-xr-x  home/
 drwxr-xr-x  about/
