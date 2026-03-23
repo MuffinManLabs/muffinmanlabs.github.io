@@ -753,7 +753,7 @@ export default function CircuitTraces() {
       const drawWindow = viewH * 0.5;
 
       traces.forEach((tp, i) => {
-        const reached = scrollTop + viewH * 0.65;
+        const reached = scrollTop + viewH * 0.5;
         const progress = (reached - tp.triggerY) / drawWindow;
         const p = Math.max(0, Math.min(1, progress));
         if (p > 0) {
@@ -785,7 +785,7 @@ export default function CircuitTraces() {
         const eligible = traces
           .map((tp, i) => ({ tp, i }))
           .filter(({ tp }) => {
-            const reached = scrollTop + viewH * 0.65;
+            const reached = scrollTop + viewH * 0.5;
             return (reached - tp.triggerY) / drawWindow >= 0.8;
           });
         if (eligible.length > 0) {
