@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HexTrail from "@/components/HexTrail";
@@ -16,6 +17,8 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isMemoryMap = pathname === "/memory-map";
   const [booted, setBooted] = useState(false);
   const [ready, setReady] = useState(false);
 
@@ -46,7 +49,7 @@ export default function ClientLayout({
       {booted && <MalwareScanWidget />}
       {booted && <AccessDenied />}
       {booted && <SecretTerminal />}
-      {booted && <GlitchEffect />}
+      {booted && !isMemoryMap && <GlitchEffect />}
     </>
   );
 }

@@ -10,6 +10,7 @@ const navLinks = [
   { href: "/#projects", label: "./projects" },
   { href: "/#blog", label: "./blog" },
   { href: "/#contact", label: "./contact" },
+  { href: "/memory-map", label: "./memory-map" },
 ];
 
 export default function Header() {

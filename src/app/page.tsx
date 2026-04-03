@@ -1,7 +1,6 @@
 import Hero from "@/components/Hero";
 import About from "@/components/About";
 import ChipPinout from "@/components/ChipPinout";
-import MemoryMap from "@/components/MemoryMap";
 import Projects from "@/components/Projects";
 import Blog from "@/components/Blog";
 import Contact from "@/components/Contact";
@@ -22,8 +21,6 @@ export default function Home() {
       <About />
       <SectionDivider />
       <ChipPinout />
-      <SectionDivider />
-      <MemoryMap />
       <SectionDivider />
       <Projects />
       <SectionDivider />
