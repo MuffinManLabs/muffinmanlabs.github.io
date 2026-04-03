@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -86,6 +85,41 @@ const SYSCFG_REGS = [
   { name:"EXTICR3", off:0x10, desc:"EXTI line 8–11 source selection." },
   { name:"EXTICR4", off:0x14, desc:"EXTI line 12–15 source selection." },
 ];
+const SCS_REGS = [
+  { name:"ICTR",    off:0x004, desc:"Interrupt Controller Type. Read-only. Number of interrupt lines." },
+  { name:"STCSR",   off:0x010, desc:"SysTick Control and Status Register." },
+  { name:"STRVR",   off:0x014, desc:"SysTick Reload Value Register." },
+  { name:"STCVR",   off:0x018, desc:"SysTick Current Value Register." },
+  { name:"STCR",    off:0x01C, desc:"SysTick Calibration Value Register." },
+  { name:"ISER0",   off:0x100, desc:"Interrupt Set-Enable Register 0. Write 1 to enable IRQs 0–31." },
+  { name:"ISER1",   off:0x104, desc:"Interrupt Set-Enable Register 1. IRQs 32–63." },
+  { name:"ISER2",   off:0x108, desc:"Interrupt Set-Enable Register 2. IRQs 64–81." },
+  { name:"ICER0",   off:0x180, desc:"Interrupt Clear-Enable Register 0. Write 1 to disable IRQs 0–31." },
+  { name:"ICER1",   off:0x184, desc:"Interrupt Clear-Enable Register 1. IRQs 32–63." },
+  { name:"ICER2",   off:0x188, desc:"Interrupt Clear-Enable Register 2. IRQs 64–81." },
+  { name:"ISPR0",   off:0x200, desc:"Interrupt Set-Pending Register 0." },
+  { name:"ICPR0",   off:0x280, desc:"Interrupt Clear-Pending Register 0." },
+  { name:"IABR0",   off:0x300, desc:"Interrupt Active Bit Register 0. Read-only." },
+  { name:"IPR0",    off:0x400, desc:"Interrupt Priority Register 0. 8 bits per IRQ (only top 4 used)." },
+  { name:"CPUID",   off:0xD00, desc:"CPUID Base Register. Read-only. Identifies the processor." },
+  { name:"ICSR",    off:0xD04, desc:"Interrupt Control and State. Pending exception info, NMI/PendSV triggers." },
+  { name:"VTOR",    off:0xD08, desc:"Vector Table Offset Register. Relocate the vector table." },
+  { name:"AIRCR",   off:0xD0C, desc:"Application Interrupt and Reset Control. Priority grouping, system reset." },
+  { name:"SCR",     off:0xD10, desc:"System Control Register. Sleep modes (WFI/WFE behavior)." },
+  { name:"CCR",     off:0xD14, desc:"Configuration and Control. Stack alignment, div-by-zero trap." },
+  { name:"SHPR1",   off:0xD18, desc:"System Handler Priority Register 1. MemManage, BusFault, UsageFault." },
+  { name:"SHPR2",   off:0xD1C, desc:"System Handler Priority Register 2. SVCall." },
+  { name:"SHPR3",   off:0xD20, desc:"System Handler Priority Register 3. PendSV, SysTick." },
+  { name:"SHCSR",   off:0xD24, desc:"System Handler Control and State. Enable/pending fault handlers." },
+  { name:"CFSR",    off:0xD28, desc:"Configurable Fault Status. Combines MemManage + BusFault + UsageFault." },
+  { name:"HFSR",    off:0xD2C, desc:"HardFault Status Register." },
+  { name:"MMAR",    off:0xD34, desc:"MemManage Fault Address Register." },
+  { name:"BFAR",    off:0xD38, desc:"BusFault Address Register." },
+  { name:"AFSR",    off:0xD3C, desc:"Auxiliary Fault Status Register." },
+  { name:"CPACR",   off:0xD88, desc:"Coprocessor Access Control. Enable FPU (bits 20–23)." },
+  { name:"DEMCR",   off:0xDFC, desc:"Debug Exception and Monitor Control. Bit 24 (TRCENA) = master trace enable." },
+  { name:"STIR",    off:0xF00, desc:"Software Trigger Interrupt Register. Write IRQ number to trigger it." },
+];
 
 const hex = (n) => "0x" + n.toString(16).toUpperCase().padStart(8,"0");
 const hex4 = (n) => "0x" + n.toString(16).toUpperCase().padStart(2,"0");
@@ -108,7 +142,7 @@ const DATA = {
     { id:"code.gap1", name:"Reserved", addr:"0x00080000–0x07FFFFFF", size:"~128 MB", color:"dim" },
     { id:"code.flash", name:"Flash Memory", addr:"0x08000000–0x080FFFFF", size:"1 MB", color:"flash", desc:"Where your program lives. Non-volatile.", children:"flash" },
     { id:"code.gap2a", name:"Reserved", addr:"0x08100000–0x0FFFFFFF", color:"dim" },
-    { id:"code.ccm", name:"CCM RAM (mapped here by ST)", addr:"0x10000000–0x1000FFFF", size:"64 KB", color:"ccm", desc:"Physical RAM placed in the Code region by ST for direct D-bus access with zero wait states. CPU-only — not accessible by DMA." },
+    { id:"code.ccm", name:"CCM RAM (mapped here by ST)", addr:"0x10000000–0x1000FFFF", size:"64 KB", color:"ccm", desc:"Address 0x10000000 is technically in the Code region of the ARM memory map, but it's physical RAM. ST placed it here for direct D-bus access with zero wait states. CPU-only — not accessible by DMA." },
     { id:"code.gap2b", name:"Reserved", addr:"0x10010000–0x1FFEFFFF", color:"dim" },
     { id:"code.sysmem", name:"System Memory (ROM)", addr:"0x1FFF0000–0x1FFF7A0F", size:"~31 KB", color:"rom", desc:"Factory bootloader for UART/USB programming. Cannot be erased." },
     { id:"code.opt", name:"Option Bytes", addr:"0x1FFFC000–0x1FFFC00F", size:"16 B", color:"warn", desc:"⚠️ Read Protection Level 2 permanently bricks the chip for development." },
@@ -131,11 +165,11 @@ const DATA = {
   sram: [
     { id:"sram.bb", name:"Bit-band Region (Actual SRAM)", addr:"0x20000000–0x200FFFFF", size:"1 MB", color:"sram_i", desc:"Your actual SRAM (192 KB) lives here.", children:"sram_layout" },
     { id:"sram.gap1", name:"Unused", addr:"0x20100000–0x21FFFFFF", size:"~31 MB", color:"dim" },
-    { id:"sram.alias", name:"Bit-band Alias", addr:"0x22000000–0x23FFFFFF", size:"32 MB", color:"rom", desc:"Each bit → 4-byte alias. 1 MB × 8 × 4 = 32 MB. Write 1/0 to set/clear bit atomically.", widget:"bitband_sram" },
+    { id:"sram.alias", name:"Bit-band Alias", addr:"0x22000000–0x23FFFFFF", size:"32 MB", color:"rom", desc:"Each bit → 4-byte alias. 1 MB × 8 × 4 = 32 MB. Write 1/0 to set/clear bit atomically." },
     { id:"sram.gap2", name:"Unused", addr:"0x24000000–0x3FFFFFFF", size:"~480 MB", color:"dim" },
   ],
   sram_layout: [
-    { id:"sraml.ccm", name:"CCM (Core Coupled Memory)", addr:"0x10000000–0x1000FFFF", size:"64 KB", color:"ccm", desc:"Physical RAM, but address is in the Code region (0x0–0x1FFF FFFF). ST placed it here for direct D-bus access with zero wait states. CPU-only — not accessible by DMA." },
+    { id:"sraml.ccm", name:"CCM (Core Coupled Memory)", addr:"0x10000000–0x1000FFFF", size:"64 KB", color:"ccm", desc:"Address 0x10000000 is technically in the Code region of the ARM memory map, but it's physical RAM. ST placed it here for direct D-bus access with zero wait states. CPU-only — not accessible by DMA." },
     { id:"sraml.main", name:"Main SRAM (SRAM1+SRAM2)", addr:"0x20000000–0x2001FFFF", size:"128 KB", color:"sram_i", desc:"112 KB + 16 KB. Runtime layout inside ↓", children:"sram_runtime" },
   ],
   sram_runtime: [
@@ -151,7 +185,7 @@ const DATA = {
     { id:"p.ahb1", name:"AHB1 Peripherals", addr:"0x40020000–0x4007FFFF", size:"168 MHz", color:"ahb1", bus:"AHB1", desc:"GPIO, RCC, DMA, Flash interface, Ethernet, USB HS", children:"ahb1" },
     { id:"p.ahb2", name:"AHB2 Peripherals", addr:"0x50000000–0x50060BFF", size:"168 MHz", color:"ahb2", bus:"AHB2", desc:"USB OTG FS, DCMI, CRYP, HASH, RNG", children:"ahb2" },
     { id:"p.ahb3", name:"AHB3", addr:"0xA0000000–0xA0000FFF", size:"168 MHz", color:"gray", desc:"FSMC controller. Nothing connected on Discovery board." },
-    { id:"p.bbalias", name:"Peripheral Bit-band Alias", addr:"0x42000000–0x43FFFFFF", size:"32 MB", color:"rom", desc:"Bit-band alias for peripheral region. Same principle as SRAM bit-band.", widget:"bitband_periph" },
+    { id:"p.bbalias", name:"Peripheral Bit-band Alias", addr:"0x42000000–0x43FFFFFF", size:"32 MB", color:"rom", desc:"Bit-band alias for peripheral region. Same principle as SRAM bit-band." },
   ],
   ahb1: [
     { id:"ahb1.gpioa", name:"GPIOA", addr:"0x40020000–0x400203FF", size:"1 KB", color:"ahb1", baseAddr:0x40020000, registers:GPIO_REGS, clock:"AHB1ENR bit 0", disc:"PA0 = User button (B1)", desc:"Port A. 16 pins." },
@@ -201,13 +235,13 @@ const DATA = {
     { id:"ahb2.rng", name:"RNG", addr:"0x50060800–0x50060BFF", size:"1 KB", color:"ahb2_lt", desc:"True Random Number Generator." },
   ],
   ppb: [
-    { id:"ppb.itm", name:"ITM", addr:"0xE0000000–0xE0000FFF", size:"4 KB", color:"ppb", desc:"Instrumentation Trace. printf over SWO." },
-    { id:"ppb.dwt", name:"DWT", addr:"0xE0001000–0xE0001FFF", size:"4 KB", color:"ppb", desc:"Data Watchpoint and Trace. Cycle counter." },
-    { id:"ppb.fpb", name:"FPB", addr:"0xE0002000–0xE0002FFF", size:"4 KB", color:"ppb", desc:"Flash Patch and Breakpoint. HW breakpoints." },
+    { id:"ppb.itm", name:"ITM", addr:"0xE0000000–0xE0000FFF", size:"4 KB", color:"ppb", baseAddr:0xE0000000, addrEnd:0xE0000FFF, desc:"Instrumentation Trace. printf over SWO." },
+    { id:"ppb.dwt", name:"DWT", addr:"0xE0001000–0xE0001FFF", size:"4 KB", color:"ppb", baseAddr:0xE0001000, addrEnd:0xE0001FFF, desc:"Data Watchpoint and Trace. Cycle counter." },
+    { id:"ppb.fpb", name:"FPB", addr:"0xE0002000–0xE0002FFF", size:"4 KB", color:"ppb", baseAddr:0xE0002000, addrEnd:0xE0002FFF, desc:"Flash Patch and Breakpoint. HW breakpoints." },
     { id:"ppb.gap", name:"Reserved", addr:"0xE0003000–0xE000DFFF", color:"dim" },
-    { id:"ppb.scs", name:"SCS (System Control Space)", addr:"0xE000E000–0xE000EFFF", size:"4 KB", color:"scs", desc:"NVIC, SysTick, SCB. DEMCR bit 24 = trace enable." },
+    { id:"ppb.scs", name:"SCS (System Control Space)", addr:"0xE000E000–0xE000EFFF", size:"4 KB", color:"scs", baseAddr:0xE000E000, addrEnd:0xE000EFFF, registers:SCS_REGS, desc:"NVIC, SysTick, SCB. DEMCR bit 24 = trace enable." },
     { id:"ppb.gap2", name:"Reserved", addr:"0xE000F000–0xE003FFFF", color:"dim" },
-    { id:"ppb.tpiu", name:"TPIU", addr:"0xE0040000–0xE0040FFF", size:"4 KB", color:"ppb", desc:"Trace Port Interface. SWO output." },
+    { id:"ppb.tpiu", name:"TPIU", addr:"0xE0040000–0xE0040FFF", size:"4 KB", color:"ppb", baseAddr:0xE0040000, addrEnd:0xE0040FFF, desc:"Trace Port Interface. SWO output." },
   ],
 };
 
@@ -236,27 +270,65 @@ function findAllExpandable() {
     const blocks = DATA[gk]; if(!blocks) return;
     for(const b of blocks) {
       if(b.children && DATA[b.children]) { ids.push(b.id); walk(b.children); }
-      if(b.registers || b.widget) ids.push(b.id);
+      if(b.registers || b.clock) ids.push(b.id);
     }
   };
   walk("root"); return ids;
 }
 const ALL_EXPANDABLE = findAllExpandable();
 
+function parseAddrRange(addrStr) {
+  if (!addrStr) return null;
+  const parts = addrStr.replace(/\s/g,"").split("–");
+  const start = parseInt(parts[0], 16);
+  if (isNaN(start)) return null;
+  if (parts.length > 1) {
+    const end = parseInt(parts[1], 16);
+    return isNaN(end) ? null : [start, end];
+  }
+  // Single address like "0x08000000" — treat as 4-byte entry
+  return [start, start + 3];
+}
+
 function searchBlocks(query) {
   if (!query || query.length < 2) return { matches: new Set(), toExpand: new Set() };
   const q = query.toLowerCase();
   const matches = new Set();
   const toExpand = new Set();
+
+  // Check if query is a hex address
+  const isHexQuery = /^0?x?[0-9a-fA-F]{2,8}$/.test(q.replace(/^0x/i,"").length > 0 ? q : "");
+  const queryAddr = parseInt(q.replace(/^0x/i,""), 16);
+  const validAddr = isHexQuery && !isNaN(queryAddr) && q.replace(/^0x/i,"").length >= 2;
+
   const walk = (gk, ancestors) => {
     const blocks = DATA[gk]; if (!blocks) return;
     for (const b of blocks) {
+      let matched = false;
+      // Text match
       const searchText = `${b.name} ${b.addr||""} ${b.desc||""} ${b.clock||""} ${b.disc||""}`.toLowerCase();
-      // Also search register names
       const regText = (b.registers||[]).map(r=>r.name).join(" ").toLowerCase();
-      if (searchText.includes(q) || regText.includes(q)) {
+      if (searchText.includes(q) || regText.includes(q)) matched = true;
+
+      // Numeric address range match
+      if (!matched && validAddr && b.addr) {
+        const range = parseAddrRange(b.addr);
+        if (range && queryAddr >= range[0] && queryAddr <= range[1]) matched = true;
+      }
+      // Also check against baseAddr + register offsets
+      if (!matched && validAddr && b.baseAddr !== undefined) {
+        const end = b.addrEnd !== undefined ? b.addrEnd : b.baseAddr + 0x3FF;
+        if (queryAddr >= b.baseAddr && queryAddr <= end) matched = true;
+      }
+
+      if (matched) {
         matches.add(b.id);
         for (const a of ancestors) toExpand.add(a);
+        // If address matches a specific register, expand this block too
+        if (validAddr && b.registers && b.baseAddr !== undefined) {
+          const offset = queryAddr - b.baseAddr;
+          if (b.registers.some(r => r.off === offset)) toExpand.add(b.id);
+        }
       }
       if (b.children && DATA[b.children]) walk(b.children, [...ancestors, b.id]);
     }
@@ -274,7 +346,8 @@ function buildAddrLookup() {
     const blocks = DATA[gk]; if(!blocks) return;
     for (const b of blocks) {
       if (b.baseAddr !== undefined) {
-        entries.push({ name:b.name, base:b.baseAddr, end:b.baseAddr+0x3FF, bus:bus||b.bus||"", region:region||"", registers:b.registers||[] });
+        const end = b.addrEnd !== undefined ? b.addrEnd : b.baseAddr + 0x3FF;
+        entries.push({ name:b.name, base:b.baseAddr, end, bus:bus||b.bus||"", region:region||"", registers:b.registers||[] });
       }
       if (b.children && DATA[b.children]) walk(b.children, region||b.name, bus||b.bus||"");
     }
@@ -286,31 +359,123 @@ function buildAddrLookup() {
 const ADDR_LOOKUP = buildAddrLookup();
 
 function lookupAddress(addrNum) {
-  // Determine region
-  let region = "Unknown", bus = "";
-  if (addrNum < 0x20000000) { region = "Code Region"; bus = "ICode + DCode"; }
-  else if (addrNum < 0x40000000) { region = "SRAM Region"; bus = "System bus"; }
-  else if (addrNum < 0x60000000) { region = "Peripheral Region"; bus = "System bus"; }
-  else if (addrNum < 0xA0000000) { region = "External RAM"; bus = "System bus"; }
-  else if (addrNum < 0xE0000000) { region = "External Device"; bus = "System bus"; }
-  else if (addrNum < 0xE0100000) { region = "Private Peripheral Bus"; bus = "PPB"; }
-  else { region = "Vendor-specific"; bus = "System bus"; }
-
-  // Find peripheral
+  // 1. Check peripherals first (most specific)
   for (const e of ADDR_LOOKUP) {
     if (addrNum >= e.base && addrNum <= e.end) {
       const offset = addrNum - e.base;
-      let regName = "";
-      for (const r of e.registers) {
-        if (r.off === offset) regName = r.name;
-        else if (r.off < offset && (!regName || r.off > (e.registers.find(x=>x.name===regName)||{off:-1}).off)) {}
-      }
-      // Exact register match
       const exactReg = e.registers.find(r => r.off === offset);
-      return { region, bus: e.bus || bus, peripheral: e.name, offset, regName: exactReg ? exactReg.name : null };
+      return { region: e.region || regionName(addrNum), bus: e.bus || busName(addrNum), peripheral: e.name, offset, regName: exactReg ? exactReg.name : null };
     }
   }
-  return { region, bus, peripheral: null, offset: 0, regName: null };
+
+  // 2. CCM
+  if (addrNum >= 0x10000000 && addrNum <= 0x1000FFFF) {
+    const off = addrNum - 0x10000000;
+    return { region:"Code Region", bus:"D-bus", detail:`CCM (Core Coupled Memory). 64 KB. CPU-only via D-bus, zero wait states. Offset ${hex4(off)} from CCM base.` };
+  }
+
+  // 3. Flash
+  if (addrNum >= 0x08000000 && addrNum <= 0x080FFFFF) {
+    const off = addrNum - 0x08000000;
+    let detail = `Flash memory. Offset ${hex4(off)} from Flash base.`;
+    if (addrNum === 0x08000000) detail = "Flash base. Vector table entry 0 — Initial Stack Pointer value (data, not a handler).";
+    else if (addrNum === 0x08000004) detail = "Vector table entry 1 — Reset Handler address. First code to execute.";
+    else if (addrNum === 0x08000008) detail = "Vector table entry 2 — NMI Handler address.";
+    else if (addrNum === 0x0800000C) detail = "Vector table entry 3 — HardFault Handler address.";
+    else if (addrNum >= 0x08000010 && addrNum <= 0x0800003F) {
+      const entry = Math.floor((addrNum - 0x08000000) / 4);
+      detail = `Vector table entry ${entry} — system exception handler address.`;
+    } else if (addrNum >= 0x08000040 && addrNum <= 0x080001FF) {
+      const entry = Math.floor((addrNum - 0x08000000) / 4);
+      const irq = entry - 16;
+      detail = `Vector table entry ${entry} — IRQ${irq} handler address.`;
+    } else {
+      detail = `Flash. Program code and data. Offset ${hex4(off)} from base.`;
+    }
+    return { region:"Code Region", bus:"ICode + DCode", detail };
+  }
+
+  // 4. Flash alias
+  if (addrNum >= 0x00000000 && addrNum <= 0x0007FFFF) {
+    return { region:"Code Region", bus:"ICode + DCode", detail:`Aliased to Flash at ${hex(addrNum + 0x08000000)}. Processor reads here on reset.` };
+  }
+
+  // 5. SRAM
+  if (addrNum >= 0x20000000 && addrNum <= 0x2001FFFF) {
+    let block, blockBase;
+    if (addrNum < 0x2001C000) { block = "SRAM1 (112 KB)"; blockBase = 0x20000000; }
+    else { block = "SRAM2 (16 KB)"; blockBase = 0x2001C000; }
+    const off = addrNum - blockBase;
+    let extra = "";
+    if (addrNum === 0x20000000) extra = " Start of .data section.";
+    return { region:"SRAM Region", bus:"System bus", detail:`${block}. Offset ${hex4(off)} from ${hex(blockBase)}.${extra}` };
+  }
+
+  // 6. SRAM bit-band alias → reverse calculate
+  if (addrNum >= 0x22000000 && addrNum <= 0x23FFFFFF) {
+    const aliasOff = addrNum - 0x22000000;
+    const byteOff = Math.floor(aliasOff / 32);
+    const bitNum = Math.floor((aliasOff % 32) / 4);
+    const realAddr = 0x20000000 + byteOff;
+    return { region:"SRAM Region", bus:"System bus", detail:`SRAM bit-band alias. Maps to bit ${bitNum} of byte ${hex(realAddr)}.` };
+  }
+
+  // 7. Peripheral bit-band alias → reverse calculate
+  if (addrNum >= 0x42000000 && addrNum <= 0x43FFFFFF) {
+    const aliasOff = addrNum - 0x42000000;
+    const byteOff = Math.floor(aliasOff / 32);
+    const bitNum = Math.floor((aliasOff % 32) / 4);
+    const realAddr = 0x40000000 + byteOff;
+    // Try to identify which peripheral the real address belongs to
+    let periphName = "";
+    for (const e of ADDR_LOOKUP) {
+      if (realAddr >= e.base && realAddr <= e.end) { periphName = ` (${e.name})`; break; }
+    }
+    return { region:"Peripheral Region", bus:"System bus", detail:`Peripheral bit-band alias. Maps to bit ${bitNum} of byte ${hex(realAddr)}${periphName}.` };
+  }
+
+  // 8. System Memory ROM
+  if (addrNum >= 0x1FFF0000 && addrNum <= 0x1FFF7A0F) {
+    return { region:"Code Region", bus:"ICode + DCode", detail:"System Memory (ROM). Factory bootloader for UART/USB programming." };
+  }
+
+  // 9. Option bytes
+  if (addrNum >= 0x1FFFC000 && addrNum <= 0x1FFFC00F) {
+    return { region:"Code Region", bus:"ICode + DCode", detail:"Option Bytes. Chip configuration. ⚠️ Read Protection Level 2 bricks the chip." };
+  }
+
+  // 10. Region-level fallback
+  const r = regionName(addrNum);
+  const b = busName(addrNum);
+  // Known unused gaps
+  const gaps = [
+    [0x00080000, 0x07FFFFFF], [0x08100000, 0x0FFFFFFF], [0x10010000, 0x1FFEFFFF],
+    [0x20020000, 0x21FFFFFF], [0x24000000, 0x3FFFFFFF],
+    [0x60000000, 0x9FFFFFFF], [0xA0000000, 0xDFFFFFFF], [0xE0100000, 0xFFFFFFFF],
+  ];
+  for (const [s, e] of gaps) {
+    if (addrNum >= s && addrNum <= e) {
+      return { region: r, bus: b, detail:"Unused/reserved address. No memory or peripheral here. Accessing this would cause a BusFault." };
+    }
+  }
+  return { region: r, bus: b, detail: null };
+}
+
+function regionName(a) {
+  if(a<0x20000000) return "Code Region";
+  if(a<0x40000000) return "SRAM Region";
+  if(a<0x60000000) return "Peripheral Region";
+  if(a<0xA0000000) return "External RAM";
+  if(a<0xE0000000) return "External Device";
+  if(a<0xE0100000) return "Private Peripheral Bus";
+  return "Vendor-specific";
+}
+function busName(a) {
+  if(a<0x20000000) return "ICode + DCode";
+  if(a<0x60000000) return "System bus";
+  if(a<0xE0000000) return "System bus";
+  if(a<0xE0100000) return "PPB";
+  return "System bus";
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -338,6 +503,49 @@ function Tooltip({block,anchorEl}) {
   return <div style={{position:"fixed",left,top:r.top-8,transform:"translateY(-100%)",zIndex:9999,background:"#1a1a2a",border:"1px solid #38384e",borderRadius:7,padding:"9px 12px",boxShadow:"0 8px 30px rgba(0,0,0,0.65)",minWidth:130,maxWidth:220,pointerEvents:"none"}}>
     <div style={{fontSize:9,fontWeight:700,color:"#555572",marginBottom:4,letterSpacing:0.8}}>CONTAINS</div>
     {names.map((n,i)=><div key={i} style={{fontSize:11,color:"#bbbbd4",padding:"1px 0",borderBottom:i<names.length-1?"1px solid #24243a":"none"}}>{n}</div>)}
+  </div>;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CLOCK PATH DISPLAY
+   ══════════════════════════════════════════════════════════════════════════ */
+const CLOCK_PATHS = {
+  ahb1: [
+    { label:"HSI", freq:"16 MHz", color:"#e8a040" },
+    { label:"PLL", freq:"", color:"#c080e0" },
+    { label:"SYSCLK", freq:"168 MHz", color:"#60c0f0" },
+    { label:"AHB1 /1", freq:"168 MHz", color:"#e08040" },
+  ],
+  apb1: [
+    { label:"HSI", freq:"16 MHz", color:"#e8a040" },
+    { label:"PLL", freq:"", color:"#c080e0" },
+    { label:"SYSCLK", freq:"168 MHz", color:"#60c0f0" },
+    { label:"AHB1 /1", freq:"168 MHz", color:"#e08040" },
+    { label:"APB1 /4", freq:"42 MHz", color:"#6090cc" },
+  ],
+  apb2: [
+    { label:"HSI", freq:"16 MHz", color:"#e8a040" },
+    { label:"PLL", freq:"", color:"#c080e0" },
+    { label:"SYSCLK", freq:"168 MHz", color:"#60c0f0" },
+    { label:"AHB1 /1", freq:"168 MHz", color:"#e08040" },
+    { label:"APB2 /2", freq:"84 MHz", color:"#cc60a0" },
+  ],
+};
+
+function ClockPath({busGroup}) {
+  const steps = CLOCK_PATHS[busGroup];
+  if (!steps) return null;
+  return <div style={{padding:"6px 10px",margin:"2px 0 4px",background:"#12121a",borderRadius:5,border:"1px solid #2a2a3e"}}>
+    <div style={{display:"flex",alignItems:"center",gap:0,flexWrap:"wrap",marginBottom:4}}>
+      {steps.map((s,i)=><span key={i} style={{display:"flex",alignItems:"center"}}>
+        <span style={{display:"inline-flex",flexDirection:"column",alignItems:"center",padding:"3px 8px",borderRadius:4,background:s.color+"18",border:`1px solid ${s.color}30`}}>
+          <span style={{fontSize:10,fontWeight:700,color:s.color,letterSpacing:0.3,lineHeight:1.2}}>{s.label}</span>
+          {s.freq&&<span style={{fontSize:9,color:s.color+"bb",fontFamily:"'JetBrains Mono',monospace",lineHeight:1.2}}>{s.freq}</span>}
+        </span>
+        {i<steps.length-1&&<span style={{color:"#444460",fontSize:12,margin:"0 3px",flexShrink:0}}>→</span>}
+      </span>)}
+    </div>
+    <div style={{fontSize:9,color:"#555570",fontStyle:"italic"}}>Default clock path assuming PLL configured for 168 MHz. Before PLL setup, everything runs on HSI at 16 MHz.</div>
   </div>;
 }
 
@@ -423,7 +631,7 @@ function MemBlock({block,depth,isOpen,onToggle,highlighted,bookmarked,onBookmark
   const timer=useRef(null);
   const elRef=useRef(null);
   const col=C[block.color]||C.gray;
-  const expandable=!!(block.children&&DATA[block.children])||!!block.registers||!!block.widget;
+  const expandable=!!(block.children&&DATA[block.children])||!!block.registers||!!block.clock;
   const isDim=block.color==="dim";
   const vPad=isDim?4:Math.max(6,11-depth*1.5);
   const nfs=isDim?10.5:Math.max(11.5,14-depth*0.8);
@@ -471,6 +679,8 @@ function MemBlock({block,depth,isOpen,onToggle,highlighted,bookmarked,onBookmark
    ══════════════════════════════════════════════════════════════════════════ */
 function BlockTree({groupKey,depth,expanded,onToggle,matches,bookmarks,onBookmark}) {
   const blocks=DATA[groupKey]; if(!blocks) return null;
+  // Determine bus group for clock path display
+  const busGroup = (groupKey==="ahb1"||groupKey==="apb1"||groupKey==="apb2") ? groupKey : null;
   return <div>
     {NOTES[groupKey]&&<div style={{fontSize:Math.max(10.5,11.5-depth*0.3),color:"#6a6a8a",lineHeight:1.5,padding:"4px 10px",marginBottom:5,borderLeft:"3px solid #2a2a4048",maxWidth:640}}>{NOTES[groupKey]}</div>}
     {blocks.map(b=>{
@@ -482,13 +692,10 @@ function BlockTree({groupKey,depth,expanded,onToggle,matches,bookmarks,onBookmar
         {b.children&&DATA[b.children]&&<AnimWrap open={isOpen} color={b.color}>
           <BlockTree groupKey={b.children} depth={depth+1} expanded={expanded} onToggle={onToggle} matches={matches} bookmarks={bookmarks} onBookmark={onBookmark}/>
         </AnimWrap>}
-        {/* Registers */}
-        {b.registers&&<AnimWrap open={isOpen} color={b.color}>
-          <RegisterList registers={b.registers} baseAddr={b.baseAddr}/>
-        </AnimWrap>}
-        {/* Widget */}
-        {b.widget&&<AnimWrap open={isOpen} color={b.color}>
-          <BitBandCalc type={b.widget==="bitband_sram"?"sram":"periph"}/>
+        {/* Clock path + Registers for peripherals */}
+        {(b.registers||b.clock)&&<AnimWrap open={isOpen} color={b.color}>
+          {b.clock&&busGroup&&<ClockPath busGroup={busGroup}/>}
+          {b.registers&&<RegisterList registers={b.registers} baseAddr={b.baseAddr}/>}
         </AnimWrap>}
       </div>;
     })}
@@ -512,28 +719,56 @@ function Minimap({expanded,onJump}) {
 /* ══════════════════════════════════════════════════════════════════════════
    ADDRESS CALCULATOR PANEL
    ══════════════════════════════════════════════════════════════════════════ */
-function AddrCalc() {
+function ToolBar({bookmarks,onBookmarkJump,allBlocks}) {
+  const [openTool,setOpenTool]=useState(null);
+  const toggle=(name)=>setOpenTool(prev=>prev===name?null:name);
+  const bmCount=bookmarks.size;
+
+  return <div style={{position:"fixed",bottom:0,left:0,right:42,zIndex:100,display:"flex",flexDirection:"column",alignItems:"stretch",pointerEvents:"none"}}>
+    {/* Panel */}
+    {openTool&&<div style={{pointerEvents:"auto",margin:"0 12px",marginBottom:0,background:"#14141e",border:"1px solid #2e2e44",borderBottom:"none",borderRadius:"8px 8px 0 0",padding:"14px 16px",boxShadow:"0 -4px 24px rgba(0,0,0,0.5)",maxHeight:340,overflowY:"auto"}}>
+      {openTool==="addr"&&<AddrCalcPanel/>}
+      {openTool==="bb_sram"&&<BitBandCalc type="sram"/>}
+      {openTool==="bb_periph"&&<BitBandCalc type="periph"/>}
+      {openTool==="bookmarks"&&<BookmarkPanel bookmarks={bookmarks} onJump={onBookmarkJump} allBlocks={allBlocks}/>}
+    </div>}
+
+    {/* Button bar */}
+    <div style={{pointerEvents:"auto",display:"flex",gap:4,padding:"6px 12px",background:"#13131b",borderTop:"1px solid #222232",justifyContent:"center",flexWrap:"wrap"}}>
+      <ToolBtn icon="📍" label="Address Calc" active={openTool==="addr"} onClick={()=>toggle("addr")}/>
+      <ToolBtn icon="🔀" label="SRAM Bit-Band" active={openTool==="bb_sram"} onClick={()=>toggle("bb_sram")}/>
+      <ToolBtn icon="🔀" label="Periph Bit-Band" active={openTool==="bb_periph"} onClick={()=>toggle("bb_periph")}/>
+      <ToolBtn icon="★" label={bmCount>0?`Bookmarks (${bmCount})`:"Bookmarks"} active={openTool==="bookmarks"} onClick={()=>toggle("bookmarks")} highlight={bmCount>0}/>
+    </div>
+  </div>;
+}
+
+function ToolBtn({icon,label,active,onClick,highlight}) {
+  return <button onClick={onClick} style={{background:active?"#252540":"#1a1a2a",border:`1px solid ${active?"#4466aa":"#333348"}`,borderRadius:5,padding:"5px 12px",color:active?"#a0b8e0":highlight?"#f0c030":"#7878a0",fontSize:11,cursor:"pointer",fontWeight:600,display:"flex",alignItems:"center",gap:5,transition:"all 150ms"}}>
+    <span style={{fontSize:13}}>{icon}</span>{label}
+  </button>;
+}
+
+function AddrCalcPanel() {
   const [input,setInput]=useState("");
-  const [show,setShow]=useState(false);
   const addr=parseInt(input,16);
   const valid=input.length>=3&&!isNaN(addr)&&addr>=0&&addr<=0xFFFFFFFF;
   const info=valid?lookupAddress(addr):null;
 
-  return <div style={{position:"fixed",bottom:12,right:56,zIndex:100}}>
-    <button onClick={()=>setShow(s=>!s)} style={{background:"#1a1a2a",border:"1px solid #333348",borderRadius:6,padding:"5px 10px",color:"#8888aa",fontSize:11,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 16px rgba(0,0,0,0.4)"}}>📍 Addr Calc</button>
-    {show&&<div style={{position:"absolute",bottom:36,right:0,width:320,background:"#14141e",border:"1px solid #2e2e44",borderRadius:8,padding:"12px",boxShadow:"0 8px 32px rgba(0,0,0,0.6)"}}>
-      <div style={{fontSize:10,fontWeight:700,color:"#606078",marginBottom:6,letterSpacing:0.8}}>ADDRESS CALCULATOR</div>
-      <input value={input} onChange={e=>setInput(e.target.value)} placeholder="0x40020C14" style={{width:"100%",boxSizing:"border-box",background:"#1a1a28",border:"1px solid #333348",borderRadius:4,padding:"6px 8px",color:"#d0d0e0",fontSize:12,fontFamily:"'JetBrains Mono',monospace",outline:"none",marginBottom:8}}/>
-      {info&&<div style={{fontSize:11,lineHeight:1.7}}>
-        <div><span style={{color:"#707088"}}>Region:</span> <span style={{color:"#d0d0e8"}}>{info.region}</span></div>
-        <div><span style={{color:"#707088"}}>Bus:</span> <span style={{color:BUS_C[info.bus]||"#aaa"}}>{info.bus}</span></div>
-        {info.peripheral&&<>
-          <div><span style={{color:"#707088"}}>Peripheral:</span> <span style={{color:"#f0c860"}}>{info.peripheral}</span></div>
-          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"#a0a0b8"}}>{info.peripheral} + offset {hex4(info.offset)}{info.regName?` = ${info.regName}`:""}</div>
-        </>}
-        {!info.peripheral&&<div style={{color:"#606078",fontSize:10}}>No specific peripheral mapped</div>}
-      </div>}
+  return <div>
+    <div style={{fontSize:10,fontWeight:700,color:"#606078",marginBottom:8,letterSpacing:0.8}}>ADDRESS CALCULATOR</div>
+    <input value={input} onChange={e=>setInput(e.target.value)} placeholder="Type any hex address, e.g. 0x40020C14" style={{width:"100%",boxSizing:"border-box",background:"#1a1a28",border:"1px solid #333348",borderRadius:4,padding:"7px 10px",color:"#d0d0e0",fontSize:12,fontFamily:"'JetBrains Mono',monospace",outline:"none",marginBottom:10}}/>
+    {info&&<div style={{fontSize:11.5,lineHeight:1.8}}>
+      <div><span style={{color:"#707088"}}>Region:</span> <span style={{color:"#d0d0e8"}}>{info.region}</span></div>
+      <div><span style={{color:"#707088"}}>Bus:</span> <span style={{color:BUS_C[info.bus]||"#aaa"}}>{info.bus}</span></div>
+      {info.peripheral&&<>
+        <div><span style={{color:"#707088"}}>Peripheral:</span> <span style={{color:"#f0c860"}}>{info.peripheral}</span></div>
+        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"#a0a0b8",background:"#1a1a24",padding:"6px 10px",borderRadius:4,marginTop:4}}>{info.peripheral} + offset {hex4(info.offset)}{info.regName?<span style={{color:"#70d898"}}> = {info.regName}</span>:""}</div>
+      </>}
+      {!info.peripheral&&info.detail&&<div style={{fontSize:11.5,color:"#b8b8d0",background:"#1a1a24",padding:"8px 10px",borderRadius:4,marginTop:4,lineHeight:1.6}}>{info.detail}</div>}
+      {!info.peripheral&&!info.detail&&<div style={{color:"#606078",fontSize:10,marginTop:4}}>No specific info for this address</div>}
     </div>}
+    {!valid&&input.length>0&&<div style={{fontSize:10,color:"#606078"}}>Enter a valid hex address (e.g. 0x40020C14)</div>}
   </div>;
 }
 
@@ -541,23 +776,18 @@ function AddrCalc() {
    BOOKMARK PANEL
    ══════════════════════════════════════════════════════════════════════════ */
 function BookmarkPanel({bookmarks,onJump,allBlocks}) {
-  const [show,setShow]=useState(false);
   const items=useMemo(()=>{
     const list=[];
     for(const id of bookmarks) { if(allBlocks[id]) list.push(allBlocks[id]); }
     return list;
   },[bookmarks,allBlocks]);
-
-  if(bookmarks.size===0) return null;
-  return <div style={{position:"fixed",bottom:12,left:12,zIndex:100}}>
-    <button onClick={()=>setShow(s=>!s)} style={{background:"#1a1a2a",border:"1px solid #333348",borderRadius:6,padding:"5px 10px",color:"#f0c030",fontSize:11,cursor:"pointer",fontWeight:600,boxShadow:"0 4px 16px rgba(0,0,0,0.4)"}}>★ {bookmarks.size} bookmarks</button>
-    {show&&<div style={{position:"absolute",bottom:36,left:0,width:280,maxHeight:300,overflowY:"auto",background:"#14141e",border:"1px solid #2e2e44",borderRadius:8,padding:"10px",boxShadow:"0 8px 32px rgba(0,0,0,0.6)"}}>
-      <div style={{fontSize:10,fontWeight:700,color:"#606078",marginBottom:6,letterSpacing:0.8}}>BOOKMARKS</div>
-      {items.map(b=><div key={b.id} onClick={()=>onJump(b.id)} style={{padding:"5px 8px",marginBottom:2,borderRadius:4,cursor:"pointer",fontSize:11,color:"#c0c0d8",background:"#1a1a24",border:"1px solid #28283a",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <span style={{fontWeight:600}}>{b.name}</span>
-        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#666680"}}>{(b.addr||"").split("–")[0]}</span>
-      </div>)}
-    </div>}
+  if(!items.length) return <div style={{fontSize:10,color:"#505068",padding:8}}>No bookmarks yet — click ☆ on any block</div>;
+  return <div>
+    <div style={{fontSize:10,fontWeight:700,color:"#606078",marginBottom:8,letterSpacing:0.8}}>BOOKMARKS ({items.length})</div>
+    {items.map(b=><div key={b.id} onClick={()=>onJump(b.id)} style={{padding:"6px 10px",marginBottom:3,borderRadius:4,cursor:"pointer",fontSize:11,color:"#c0c0d8",background:"#1a1a24",border:"1px solid #28283a",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"background 150ms"}}>
+      <span style={{fontWeight:600}}>{b.name}</span>
+      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#666680"}}>{(b.addr||"").split("–")[0]}</span>
+    </div>)}
   </div>;
 }
 
@@ -610,18 +840,18 @@ export default function MemoryMapExplorer() {
     setBookmarks(prev=>{const n=new Set(prev);if(n.has(id))n.delete(id);else n.add(id);return n});
   },[]);
 
-  // Search
-  useEffect(()=>{
-    if(searchQuery.length>=2){
+  // Search only on Enter or clear
+  const doSearch=useCallback((q)=>{
+    if(q.length>=2){
       if(!preSearchExpanded) setPreSearchExpanded(new Set(expanded));
-      const{matches:m,toExpand}=searchBlocks(searchQuery);
+      const{matches:m,toExpand}=searchBlocks(q);
       setMatches(m);
       setExpanded(prev=>{const n=new Set(prev);for(const id of toExpand) n.add(id);return n});
     } else {
       setMatches(new Set());
       if(preSearchExpanded){setExpanded(preSearchExpanded);setPreSearchExpanded(null)}
     }
-  },[searchQuery]);
+  },[expanded,preSearchExpanded]);
 
   // Minimap jump: toggle + scroll
   const minimapJump=useCallback(id=>{
@@ -661,8 +891,8 @@ export default function MemoryMapExplorer() {
           <span style={{fontSize:11,color:"#484860"}}>Memory Map Explorer</span>
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center"}}>
-          <input value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} placeholder="Search peripherals, addresses, keywords…" style={{width:260,background:"#1a1a28",border:"1px solid #333348",borderRadius:4,padding:"4px 8px",color:"#d0d0e0",fontSize:11,fontFamily:"'Segoe UI',sans-serif",outline:"none"}}/>
-          {searchQuery&&<button onClick={()=>setSearchQuery("")} style={{background:"#2a2a3a",border:"1px solid #3a3a4e",borderRadius:3,color:"#9898b0",padding:"3px 8px",fontSize:10,cursor:"pointer"}}>✕</button>}
+          <input value={searchQuery} onChange={e=>{setSearchQuery(e.target.value);if(!e.target.value)doSearch("")}} onKeyDown={e=>{if(e.key==="Enter")doSearch(searchQuery)}} placeholder="Search… (press Enter)" style={{width:260,background:"#1a1a28",border:"1px solid #333348",borderRadius:4,padding:"4px 8px",color:"#d0d0e0",fontSize:11,fontFamily:"'Segoe UI',sans-serif",outline:"none"}}/>
+          {searchQuery&&<button onClick={()=>{setSearchQuery("");doSearch("")}} style={{background:"#2a2a3a",border:"1px solid #3a3a4e",borderRadius:3,color:"#9898b0",padding:"3px 8px",fontSize:10,cursor:"pointer"}}>✕</button>}
           <button onClick={expandAll} style={{background:"#1e1e30",border:"1px solid #2e2e44",borderRadius:4,color:"#8888aa",padding:"3px 10px",fontSize:11,cursor:"pointer",fontWeight:600}}>Expand All</button>
           <button onClick={collapseAll} style={{background:"#1e1e30",border:"1px solid #2e2e44",borderRadius:4,color:"#8888aa",padding:"3px 10px",fontSize:11,cursor:"pointer",fontWeight:600}}>Collapse All</button>
         </div>
@@ -672,7 +902,7 @@ export default function MemoryMapExplorer() {
 
     {/* Body */}
     <div style={{flex:1,display:"flex",overflow:"hidden"}}>
-      <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:"12px 16px 60px"}}>
+      <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:"12px 16px 90px"}}>
         <h1 style={{fontSize:17,fontWeight:700,color:"#e2e2f2",margin:"0 0 4px 0"}}>ARM Cortex-M4 — 4 GB Address Space</h1>
         <BlockTree groupKey="root" depth={0} expanded={expanded} onToggle={toggle} matches={matches} bookmarks={bookmarks} onBookmark={toggleBookmark}/>
         {expanded.size===0&&!searchQuery&&<div style={{marginTop:16,padding:"9px 13px",background:"#14141c",borderRadius:5,border:"1px solid #222236"}}>
@@ -690,7 +920,6 @@ export default function MemoryMapExplorer() {
       <Minimap expanded={expanded} onJump={minimapJump}/>
     </div>
 
-    <AddrCalc/>
-    <BookmarkPanel bookmarks={bookmarks} onJump={bookmarkJump} allBlocks={BLOCK_MAP}/>
+    <ToolBar bookmarks={bookmarks} onBookmarkJump={bookmarkJump} allBlocks={BLOCK_MAP}/>
   </div>;
 }
