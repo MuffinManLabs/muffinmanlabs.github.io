@@ -85,6 +85,153 @@ const SYSCFG_REGS = [
   { name:"EXTICR3", off:0x10, desc:"EXTI line 8–11 source selection." },
   { name:"EXTICR4", off:0x14, desc:"EXTI line 12–15 source selection." },
 ];
+
+// TIM2–TIM5 general-purpose timer registers (RM0090 Table 101, Section 18.4)
+const TIM_GP_REGS = [
+  { name:"CR1",   off:0x00, desc:"Control reg 1. CEN (enable), DIR (direction), CMS (center-aligned), ARPE (preload)." },
+  { name:"CR2",   off:0x04, desc:"Control reg 2. MMS (master mode select for TRGO), TI1S, CCDS." },
+  { name:"SMCR",  off:0x08, desc:"Slave mode control. SMS (slave mode), TS (trigger select), ETR config." },
+  { name:"DIER",  off:0x0C, desc:"DMA/interrupt enable. UIE (update), CC1IE–CC4IE, TIE, UDE, CCxDE." },
+  { name:"SR",    off:0x10, desc:"Status register. UIF (update), CC1IF–CC4IF, TIF, CC1OF–CC4OF." },
+  { name:"EGR",   off:0x14, desc:"Event generation. UG (force update), CC1G–CC4G, TG." },
+  { name:"CCMR1", off:0x18, desc:"Capture/compare mode 1. OC1M/OC2M (output mode) or IC1F/IC2F (input filter)." },
+  { name:"CCMR2", off:0x1C, desc:"Capture/compare mode 2. OC3M/OC4M or IC3F/IC4F." },
+  { name:"CCER",  off:0x20, desc:"Capture/compare enable. CC1E–CC4E (enable), CC1P–CC4P (polarity)." },
+  { name:"CNT",   off:0x24, desc:"Counter value. 32-bit for TIM2/TIM5, 16-bit for TIM3/TIM4." },
+  { name:"PSC",   off:0x28, desc:"Prescaler. Divides clock by (PSC+1). 16-bit, so 1 to 65536." },
+  { name:"ARR",   off:0x2C, desc:"Auto-reload. Counter resets/wraps when it reaches this value." },
+  { name:"CCR1",  off:0x34, desc:"Capture/compare 1. Compare value for OC1 or captured value from IC1." },
+  { name:"CCR2",  off:0x38, desc:"Capture/compare 2." },
+  { name:"CCR3",  off:0x3C, desc:"Capture/compare 3." },
+  { name:"CCR4",  off:0x40, desc:"Capture/compare 4." },
+  { name:"DCR",   off:0x48, desc:"DMA control. DBA (base addr) + DBL (burst length) for DMA burst mode." },
+  { name:"DMAR",  off:0x4C, desc:"DMA address for full transfer. Access window into registers for DMA burst." },
+];
+
+// TIM1/TIM8 advanced-control timer registers (RM0090 Table 97, Section 17.4)
+const TIM_ADV_REGS = [
+  { name:"CR1",   off:0x00, desc:"Control reg 1. CEN, DIR, CMS, ARPE, CKD (clock division for filters)." },
+  { name:"CR2",   off:0x04, desc:"Control reg 2. MMS, CCUS, CCPC, OIS1–OIS4 (idle state)." },
+  { name:"SMCR",  off:0x08, desc:"Slave mode control. SMS, TS, ETR config. Same as GP timers." },
+  { name:"DIER",  off:0x0C, desc:"DMA/interrupt enable. UIE, CC1IE–CC4IE, COMIE, TIE, BIE, UDE, CCxDE." },
+  { name:"SR",    off:0x10, desc:"Status register. UIF, CC1IF–CC4IF, COMIF, TIF, BIF." },
+  { name:"EGR",   off:0x14, desc:"Event generation. UG, CC1G–CC4G, COMG, TG, BG (break)." },
+  { name:"CCMR1", off:0x18, desc:"Capture/compare mode 1. OC1M/OC2M or IC1F/IC2F." },
+  { name:"CCMR2", off:0x1C, desc:"Capture/compare mode 2. OC3M/OC4M or IC3F/IC4F." },
+  { name:"CCER",  off:0x20, desc:"Capture/compare enable. CC1E–CC4E, CC1NE–CC3NE (complementary), polarities." },
+  { name:"CNT",   off:0x24, desc:"Counter value. 16-bit." },
+  { name:"PSC",   off:0x28, desc:"Prescaler. Divides clock by (PSC+1)." },
+  { name:"ARR",   off:0x2C, desc:"Auto-reload register." },
+  { name:"RCR",   off:0x30, desc:"Repetition counter. Update event only every (RCR+1) overflows. For center-aligned PWM." },
+  { name:"CCR1",  off:0x34, desc:"Capture/compare 1." },
+  { name:"CCR2",  off:0x38, desc:"Capture/compare 2." },
+  { name:"CCR3",  off:0x3C, desc:"Capture/compare 3." },
+  { name:"CCR4",  off:0x40, desc:"Capture/compare 4." },
+  { name:"BDTR",  off:0x44, desc:"Break and dead-time. MOE (main output enable), BKE (break enable), DTG (dead-time)." },
+  { name:"DCR",   off:0x48, desc:"DMA control register." },
+  { name:"DMAR",  off:0x4C, desc:"DMA address for full transfer." },
+];
+
+// TIM6/TIM7 basic timer registers (RM0090 Section 20.4)
+const TIM_BASIC_REGS = [
+  { name:"CR1",  off:0x00, desc:"Control reg 1. CEN (enable), UDIS, URS, OPM (one-pulse), ARPE." },
+  { name:"CR2",  off:0x04, desc:"Control reg 2. MMS (master mode: TRGO to DAC)." },
+  { name:"DIER", off:0x0C, desc:"DMA/interrupt enable. UIE (update interrupt), UDE (update DMA)." },
+  { name:"SR",   off:0x10, desc:"Status register. UIF (update interrupt flag)." },
+  { name:"EGR",  off:0x14, desc:"Event generation. UG (force update event)." },
+  { name:"CNT",  off:0x24, desc:"Counter value. 16-bit." },
+  { name:"PSC",  off:0x28, desc:"Prescaler. Divides by (PSC+1)." },
+  { name:"ARR",  off:0x2C, desc:"Auto-reload. Counter wraps at this value." },
+];
+
+// SPI registers (RM0090 Section 28.5)
+const SPI_REGS = [
+  { name:"CR1",    off:0x00, desc:"Control 1. CPHA, CPOL, MSTR (master), BR (baud rate), SPE (enable), LSBFIRST, SSI, SSM, DFF (8/16-bit)." },
+  { name:"CR2",    off:0x04, desc:"Control 2. TXEIE, RXNEIE, ERRIE, SSOE, TXDMAEN, RXDMAEN." },
+  { name:"SR",     off:0x08, desc:"Status. RXNE (rx not empty), TXE (tx empty), BSY (busy), OVR, MODF, CRCERR." },
+  { name:"DR",     off:0x0C, desc:"Data register. Write to transmit, read to receive." },
+  { name:"CRCPR",  off:0x10, desc:"CRC polynomial register." },
+  { name:"RXCRCR", off:0x14, desc:"RX CRC register." },
+  { name:"TXCRCR", off:0x18, desc:"TX CRC register." },
+  { name:"I2SCFGR",off:0x1C, desc:"I2S configuration register." },
+  { name:"I2SPR",  off:0x20, desc:"I2S prescaler register." },
+];
+
+// I2C registers (RM0090 Section 27.6)
+const I2C_REGS = [
+  { name:"CR1",  off:0x00, desc:"Control 1. PE (enable), START, STOP, ACK, SWRST, POS." },
+  { name:"CR2",  off:0x04, desc:"Control 2. FREQ (APB1 clock in MHz), ITERREN, ITEVTEN, ITBUFEN, DMAEN." },
+  { name:"OAR1", off:0x08, desc:"Own address 1. 7-bit or 10-bit device address." },
+  { name:"OAR2", off:0x0C, desc:"Own address 2. Dual addressing mode." },
+  { name:"DR",   off:0x10, desc:"Data register. Write to transmit, read to receive." },
+  { name:"SR1",  off:0x14, desc:"Status 1. SB (start), ADDR, BTF, TXE, RXNE, STOPF, AF (ack failure)." },
+  { name:"SR2",  off:0x18, desc:"Status 2. MSL (master), BUSY, TRA (transmitter). Read after SR1 to clear ADDR." },
+  { name:"CCR",  off:0x1C, desc:"Clock control. CCR value sets SCL frequency. F/S (standard/fast mode), DUTY." },
+  { name:"TRISE",off:0x20, desc:"Rise time. Max SCL rise time in APB1 clock cycles + 1." },
+];
+
+// USART registers (RM0090 Section 30.6)
+const USART_REGS = [
+  { name:"SR",   off:0x00, desc:"Status. TXE (tx empty), TC (tx complete), RXNE (rx not empty), ORE, IDLE, PE, FE, NF." },
+  { name:"DR",   off:0x04, desc:"Data register. Write to transmit, read to receive. 9 bits max." },
+  { name:"BRR",  off:0x08, desc:"Baud rate register. DIV_Mantissa + DIV_Fraction. USARTDIV = fck / (8 × (2-OVER8) × baud)." },
+  { name:"CR1",  off:0x0C, desc:"Control 1. UE (enable), M (word length), PCE (parity), TE, RE, TXEIE, RXNEIE, OVER8." },
+  { name:"CR2",  off:0x10, desc:"Control 2. STOP (stop bits: 1, 0.5, 2, 1.5), CLKEN, CPOL, CPHA, LBDL." },
+  { name:"CR3",  off:0x14, desc:"Control 3. DMAT (DMA tx), DMAR (DMA rx), CTSE, RTSE (HW flow ctrl), EIE, ONEBIT." },
+  { name:"GTPR", off:0x18, desc:"Guard time and prescaler. For Smartcard and IrDA modes." },
+];
+
+// ADC registers (RM0090 Section 13.13) — per-ADC registers
+const ADC_REGS = [
+  { name:"SR",    off:0x00, desc:"Status. EOC (end of conversion), STRT, OVR (overrun), AWD (analog watchdog)." },
+  { name:"CR1",   off:0x04, desc:"Control 1. RES (resolution 12/10/8/6), SCAN, AWDIE, EOCIE, JAWDEN, AWDEN." },
+  { name:"CR2",   off:0x08, desc:"Control 2. ADON (enable), CONT, DMA, ALIGN, EXTEN/EXTSEL (trigger), SWSTART." },
+  { name:"SMPR1", off:0x0C, desc:"Sample time reg 1. SMP10–SMP18. 3 bits each: 3/15/28/56/84/112/144/480 cycles." },
+  { name:"SMPR2", off:0x10, desc:"Sample time reg 2. SMP0–SMP9." },
+  { name:"JOFR1", off:0x14, desc:"Injected channel offset 1." },
+  { name:"HTR",   off:0x24, desc:"Watchdog higher threshold." },
+  { name:"LTR",   off:0x28, desc:"Watchdog lower threshold." },
+  { name:"SQR1",  off:0x2C, desc:"Regular sequence reg 1. L (sequence length), SQ13–SQ16." },
+  { name:"SQR2",  off:0x30, desc:"Regular sequence reg 2. SQ7–SQ12." },
+  { name:"SQR3",  off:0x34, desc:"Regular sequence reg 3. SQ1–SQ6." },
+  { name:"JSQR",  off:0x38, desc:"Injected sequence register." },
+  { name:"JDR1",  off:0x3C, desc:"Injected data register 1." },
+  { name:"DR",    off:0x4C, desc:"Regular data register. Conversion result." },
+];
+
+// DMA registers — per-stream (RM0090 Section 10.5)
+// DMA has a global register block + per-stream registers. Show key globals + stream 0 as example.
+const DMA_REGS = [
+  { name:"LISR",   off:0x00, desc:"Low interrupt status. TCIF/HTIF/TEIF/DMEIF/FEIF for streams 0–3." },
+  { name:"HISR",   off:0x04, desc:"High interrupt status. Same flags for streams 4–7." },
+  { name:"LIFCR",  off:0x08, desc:"Low interrupt flag clear. Write 1 to clear flags for streams 0–3." },
+  { name:"HIFCR",  off:0x0C, desc:"High interrupt flag clear. Write 1 to clear flags for streams 4–7." },
+  { name:"S0CR",   off:0x10, desc:"Stream 0 config. EN, DIR, CIRC, MINC, PINC, MSIZE, PSIZE, PL (priority), CHSEL." },
+  { name:"S0NDTR", off:0x14, desc:"Stream 0 number of data. Items to transfer. Decrements each transfer." },
+  { name:"S0PAR",  off:0x18, desc:"Stream 0 peripheral address." },
+  { name:"S0M0AR", off:0x1C, desc:"Stream 0 memory 0 address." },
+  { name:"S0M1AR", off:0x20, desc:"Stream 0 memory 1 address (double-buffer mode)." },
+  { name:"S0FCR",  off:0x24, desc:"Stream 0 FIFO control. FTH (threshold), DMDIS (direct mode disable), FS (FIFO status)." },
+];
+
+// DAC registers (RM0090 Section 14.5)
+const DAC_REGS = [
+  { name:"CR",      off:0x00, desc:"Control. EN1/EN2 (enable), TEN1/TEN2 (trigger enable), TSEL (trigger select), WAVE, MAMP." },
+  { name:"SWTRIGR", off:0x04, desc:"Software trigger. SWTRIG1/2." },
+  { name:"DHR12R1", off:0x08, desc:"Channel 1 12-bit right-aligned data." },
+  { name:"DHR12L1", off:0x0C, desc:"Channel 1 12-bit left-aligned data." },
+  { name:"DHR8R1",  off:0x10, desc:"Channel 1 8-bit right-aligned data." },
+  { name:"DHR12R2", off:0x14, desc:"Channel 2 12-bit right-aligned data." },
+  { name:"DOR1",    off:0x2C, desc:"Channel 1 data output. Read-only. Current DAC output value." },
+  { name:"DOR2",    off:0x30, desc:"Channel 2 data output." },
+  { name:"SR",      off:0x34, desc:"Status register. DMAUDR1/2 (DMA underrun)." },
+];
+
+// PWR registers (RM0090 Section 5.5)
+const PWR_REGS = [
+  { name:"CR",  off:0x00, desc:"Power control. VOS (voltage scaling), FPDS, DBP (backup domain write), PLS (PVD level), PVDE." },
+  { name:"CSR", off:0x04, desc:"Power control/status. PVDO, SBF (standby flag), WUF (wakeup flag), BRE, EWUP." },
+];
 const SCS_REGS = [
   { name:"ICTR",    off:0x004, desc:"Interrupt Controller Type. Read-only. Number of interrupt lines." },
   { name:"STCSR",   off:0x010, desc:"SysTick Control and Status Register." },
@@ -196,33 +343,33 @@ const DATA = {
     { id:"ahb1.gpiofi", name:"GPIOF–GPIOI", addr:"0x40021400–0x400223FF", size:"4 KB", color:"gray", clock:"AHB1ENR bits 5–8", desc:"Ports F–I. Not all pins on Discovery board." },
     { id:"ahb1.rcc", name:"RCC", addr:"0x40023800–0x40023BFF", size:"1 KB", color:"ahb1_em", baseAddr:0x40023800, registers:RCC_REGS, desc:"Reset & Clock Control. Enable peripheral clocks here first." },
     { id:"ahb1.flashif", name:"Flash Interface", addr:"0x40023C00–0x40023FFF", size:"1 KB", color:"ahb1_lt", desc:"Flash access control, latency, erase/program." },
-    { id:"ahb1.dma1", name:"DMA1", addr:"0x40026000–0x400263FF", size:"1 KB", color:"ahb1", clock:"AHB1ENR bit 21", desc:"Direct Memory Access. Copies data without CPU." },
-    { id:"ahb1.dma2", name:"DMA2", addr:"0x40026400–0x400267FF", size:"1 KB", color:"ahb1", clock:"AHB1ENR bit 22", desc:"Second DMA controller." },
+    { id:"ahb1.dma1", name:"DMA1", addr:"0x40026000–0x400263FF", size:"1 KB", color:"ahb1", baseAddr:0x40026000, registers:DMA_REGS, clock:"AHB1ENR bit 21", desc:"Direct Memory Access. Copies data without CPU. 8 streams, each with configurable channel." },
+    { id:"ahb1.dma2", name:"DMA2", addr:"0x40026400–0x400267FF", size:"1 KB", color:"ahb1", baseAddr:0x40026400, registers:DMA_REGS, clock:"AHB1ENR bit 22", desc:"Second DMA controller. 8 streams." },
     { id:"ahb1.eth", name:"Ethernet MAC", addr:"0x40028000–0x400293FF", size:"5 KB", color:"gray", desc:"Ethernet controller." },
     { id:"ahb1.usbhs", name:"USB OTG HS", addr:"0x40040000–0x4007FFFF", size:"256 KB", color:"gray", desc:"USB 2.0 High-Speed." },
   ],
   apb1: [
-    { id:"apb1.tim2", name:"TIM2", addr:"0x40000000–0x400003FF", size:"1 KB", color:"apb1", baseAddr:0x40000000, clock:"APB1ENR bit 0", desc:"32-bit general-purpose timer." },
-    { id:"apb1.tim3", name:"TIM3", addr:"0x40000400–0x400007FF", size:"1 KB", color:"apb1", baseAddr:0x40000400, clock:"APB1ENR bit 1", desc:"16-bit general-purpose timer." },
-    { id:"apb1.tim4", name:"TIM4", addr:"0x40000800–0x40000BFF", size:"1 KB", color:"apb1", baseAddr:0x40000800, clock:"APB1ENR bit 2", desc:"16-bit general-purpose timer." },
-    { id:"apb1.tim5", name:"TIM5", addr:"0x40000C00–0x40000FFF", size:"1 KB", color:"apb1", baseAddr:0x40000C00, clock:"APB1ENR bit 3", desc:"32-bit general-purpose timer." },
-    { id:"apb1.tim67", name:"TIM6, TIM7", addr:"0x40001000–0x400017FF", size:"2 KB", color:"apb1", clock:"APB1ENR bits 4–5", desc:"Basic timers (DAC trigger)." },
+    { id:"apb1.tim2", name:"TIM2", addr:"0x40000000–0x400003FF", size:"1 KB", color:"apb1", baseAddr:0x40000000, registers:TIM_GP_REGS, clock:"APB1ENR bit 0", desc:"32-bit general-purpose timer." },
+    { id:"apb1.tim3", name:"TIM3", addr:"0x40000400–0x400007FF", size:"1 KB", color:"apb1", baseAddr:0x40000400, registers:TIM_GP_REGS, clock:"APB1ENR bit 1", desc:"16-bit general-purpose timer." },
+    { id:"apb1.tim4", name:"TIM4", addr:"0x40000800–0x40000BFF", size:"1 KB", color:"apb1", baseAddr:0x40000800, registers:TIM_GP_REGS, clock:"APB1ENR bit 2", desc:"16-bit general-purpose timer." },
+    { id:"apb1.tim5", name:"TIM5", addr:"0x40000C00–0x40000FFF", size:"1 KB", color:"apb1", baseAddr:0x40000C00, registers:TIM_GP_REGS, clock:"APB1ENR bit 3", desc:"32-bit general-purpose timer." },
+    { id:"apb1.tim67", name:"TIM6, TIM7", addr:"0x40001000–0x400017FF", size:"2 KB", color:"apb1", baseAddr:0x40001000, registers:TIM_BASIC_REGS, clock:"APB1ENR bits 4–5", desc:"Basic timers (DAC trigger)." },
     { id:"apb1.tim121314", name:"TIM12, TIM13, TIM14", addr:"0x40001800–0x40002BFF", color:"apb1_dk", clock:"APB1ENR bits 6–8", desc:"16-bit general-purpose timers." },
-    { id:"apb1.spi23", name:"SPI2/I2S2, SPI3/I2S3", addr:"0x40003800–0x40003FFF", size:"2 KB", color:"apb1_lt", clock:"APB1ENR bits 14–15", desc:"Serial Peripheral Interface." },
-    { id:"apb1.usart23", name:"USART2, USART3", addr:"0x40004400–0x40004BFF", size:"2 KB", color:"apb1_lt", baseAddr:0x40004400, clock:"APB1ENR bits 17–18", disc_usart2:"Available on Discovery header pins", desc:"USART." },
+    { id:"apb1.spi23", name:"SPI2/I2S2, SPI3/I2S3", addr:"0x40003800–0x40003FFF", size:"2 KB", color:"apb1_lt", baseAddr:0x40003800, registers:SPI_REGS, clock:"APB1ENR bits 14–15", desc:"Serial Peripheral Interface." },
+    { id:"apb1.usart23", name:"USART2, USART3", addr:"0x40004400–0x40004BFF", size:"2 KB", color:"apb1_lt", baseAddr:0x40004400, registers:USART_REGS, clock:"APB1ENR bits 17–18", disc_usart2:"Available on Discovery header pins", desc:"USART." },
     { id:"apb1.uart45", name:"UART4, UART5", addr:"0x40004C00–0x400053FF", size:"2 KB", color:"apb1_lt", clock:"APB1ENR bits 19–20", desc:"Asynchronous-only UARTs." },
-    { id:"apb1.i2c", name:"I2C1, I2C2, I2C3", addr:"0x40005400–0x40005FFF", color:"apb1_dk", baseAddr:0x40005400, clock:"APB1ENR bits 21–23", disc:"I2C1 → onboard accelerometer", desc:"Inter-Integrated Circuit." },
+    { id:"apb1.i2c", name:"I2C1, I2C2, I2C3", addr:"0x40005400–0x40005FFF", color:"apb1_dk", baseAddr:0x40005400, registers:I2C_REGS, clock:"APB1ENR bits 21–23", disc:"I2C1 → onboard accelerometer", desc:"Inter-Integrated Circuit." },
     { id:"apb1.can", name:"CAN1, CAN2", addr:"0x40006400–0x40006BFF", size:"2 KB", color:"apb1_dk", clock:"APB1ENR bits 25–26", desc:"Controller Area Network." },
-    { id:"apb1.pwr", name:"PWR", addr:"0x40007000–0x400073FF", size:"1 KB", color:"apb1_dk", clock:"APB1ENR bit 28", desc:"Power controller." },
-    { id:"apb1.dac", name:"DAC", addr:"0x40007400–0x400077FF", size:"1 KB", color:"apb1_lt", baseAddr:0x40007400, clock:"APB1ENR bit 29", disc:"→ onboard CS43L22 audio codec", desc:"DAC. 2 channels, 12-bit." },
+    { id:"apb1.pwr", name:"PWR", addr:"0x40007000–0x400073FF", size:"1 KB", color:"apb1_dk", baseAddr:0x40007000, registers:PWR_REGS, clock:"APB1ENR bit 28", desc:"Power controller." },
+    { id:"apb1.dac", name:"DAC", addr:"0x40007400–0x400077FF", size:"1 KB", color:"apb1_lt", baseAddr:0x40007400, registers:DAC_REGS, clock:"APB1ENR bit 29", disc:"→ onboard CS43L22 audio codec", desc:"DAC. 2 channels, 12-bit." },
   ],
   apb2: [
-    { id:"apb2.tim1", name:"TIM1", addr:"0x40010000–0x400103FF", size:"1 KB", color:"apb2", baseAddr:0x40010000, clock:"APB2ENR bit 0", desc:"Advanced-control timer. PWM + complementary outputs." },
-    { id:"apb2.tim8", name:"TIM8", addr:"0x40010400–0x400107FF", size:"1 KB", color:"apb2", baseAddr:0x40010400, clock:"APB2ENR bit 1", desc:"Advanced-control timer." },
-    { id:"apb2.usart16", name:"USART1, USART6", addr:"0x40011000–0x400117FF", size:"2 KB", color:"apb2_lt", baseAddr:0x40011000, clock:"APB2ENR bits 4–5", desc:"Fast USARTs on APB2." },
-    { id:"apb2.adc", name:"ADC1, ADC2, ADC3", addr:"0x40012000–0x400123FF", size:"1 KB", color:"apb2_lt", baseAddr:0x40012000, clock:"APB2ENR bits 8–10", desc:"12-bit ADC, up to 2.4 MSPS." },
+    { id:"apb2.tim1", name:"TIM1", addr:"0x40010000–0x400103FF", size:"1 KB", color:"apb2", baseAddr:0x40010000, registers:TIM_ADV_REGS, clock:"APB2ENR bit 0", desc:"Advanced-control timer. PWM + complementary outputs." },
+    { id:"apb2.tim8", name:"TIM8", addr:"0x40010400–0x400107FF", size:"1 KB", color:"apb2", baseAddr:0x40010400, registers:TIM_ADV_REGS, clock:"APB2ENR bit 1", desc:"Advanced-control timer." },
+    { id:"apb2.usart16", name:"USART1, USART6", addr:"0x40011000–0x400117FF", size:"2 KB", color:"apb2_lt", baseAddr:0x40011000, registers:USART_REGS, clock:"APB2ENR bits 4–5", desc:"Fast USARTs on APB2." },
+    { id:"apb2.adc", name:"ADC1, ADC2, ADC3", addr:"0x40012000–0x400123FF", size:"1 KB", color:"apb2_lt", baseAddr:0x40012000, registers:ADC_REGS, clock:"APB2ENR bits 8–10", desc:"12-bit ADC, up to 2.4 MSPS." },
     { id:"apb2.sdio", name:"SDIO", addr:"0x40012C00–0x40012FFF", size:"1 KB", color:"gray", clock:"APB2ENR bit 11", desc:"SD/MMC card interface." },
-    { id:"apb2.spi14", name:"SPI1, SPI4", addr:"0x40013000–0x400137FF", size:"2 KB", color:"apb2_lt", baseAddr:0x40013000, clock:"APB2ENR bits 12–13", disc:"SPI1 → onboard accelerometer", desc:"Fast SPI." },
+    { id:"apb2.spi14", name:"SPI1, SPI4", addr:"0x40013000–0x400137FF", size:"2 KB", color:"apb2_lt", baseAddr:0x40013000, registers:SPI_REGS, clock:"APB2ENR bits 12–13", disc:"SPI1 → onboard accelerometer", desc:"Fast SPI." },
     { id:"apb2.syscfg", name:"SYSCFG", addr:"0x40013800–0x40013BFF", size:"1 KB", color:"apb2_dk", baseAddr:0x40013800, registers:SYSCFG_REGS, clock:"APB2ENR bit 14", desc:"Memory remap, EXTI line mux." },
     { id:"apb2.exti", name:"EXTI", addr:"0x40013C00–0x40013FFF", size:"1 KB", color:"apb2_dk", baseAddr:0x40013C00, registers:EXTI_REGS, clock:"APB2ENR bit 14 (SYSCFG)", desc:"Extended Interrupts and Events." },
     { id:"apb2.tim91011", name:"TIM9, TIM10, TIM11", addr:"0x40014000–0x40014BFF", color:"apb2", clock:"APB2ENR bits 16–18", desc:"16-bit general-purpose timers." },
