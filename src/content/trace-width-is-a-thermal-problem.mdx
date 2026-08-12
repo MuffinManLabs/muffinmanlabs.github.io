@@ -1,0 +1,64 @@
+---
+title: "Trace Width Is a Thermal Problem"
+date: "2026-06-01"
+readTime: "5 min read"
+tag: "Layout"
+excerpt: "An 8x8 WS2812B matrix pulls close to 4A at full white. A worked IPC-2221 example: how wide that 5V trace must be, why 2 oz copper beats it, and where copper necks down."
+---
+A 5V rail feeding an 8x8 WS2812B matrix carries close to 4 amps. At that current a trace has stopped being a wire and become a resistor with a temperature. Its width is not a style choice or a routing convenience. It is the answer to a heat transfer problem, and if you pick it by eye you are guessing at how hot the board gets.
+
+## What IPC-2221 actually says
+
+The chart everyone screenshots comes from an empirical fit:
+
+```text
+I = k * dT^0.44 * A^0.725
+```
+
+I is current in amps, dT is the temperature rise in Celsius you are willing to accept above ambient, A is the trace cross-section in square mils, and k is 0.048 for an external layer and 0.024 for an internal one. Rearranged, the area you need is A = (I / (k * dT^0.44)) raised to the power 1/0.725.
+
+Three things fall out of that.
+
+It is area, not width. Doubling copper weight does the same work as doubling width. One ounce copper is about 1.37 mils thick, roughly 35 microns; two ounce is about 2.7 mils.
+
+Internal layers get half the k. That factor of two is IPC-2221 being conservative rather than measured physics: IPC-2152, which superseded it for current capacity, found buried traces often run cooler than external ones, because laminate carries heat away better than still air does. Use the 2221 number when you want margin, but do not sell the air-cooling story as the reason for it.
+
+Temperature rise is a decision you make, not a constant. 10C is a conservative default, 20C is common on power rails, and 30C only makes sense if you know the ambient is low. Remember it is a rise on top of whatever the board is already sitting at next to a regulator.
+
+## Working it for the matrix rail
+
+MML-02 drives an onboard 8x8 WS2812B matrix. Each LED is three channels at roughly 20 mA, so about 60 mA at full white, and 64 of them is 3.84A. Add the ESP32-S3 and the 74AHCT125 buffer and I size the 5V path for 4A.
+
+For 4A on an external layer in 1 oz copper:
+
+- 10C rise needs about 110 square mils, which is roughly 80 mils, about 2.0 mm wide
+- 20C rise needs about 72 square mils, roughly 53 mils, about 1.35 mm wide
+
+The same 4A on an internal layer at 10C rise wants about 287 square mils, over 200 mils or 5.3 mm. And that same 110 square mils in 2 oz copper on an external layer is only about 40 mils, roughly 1.0 mm.
+
+That last number is the one worth internalizing. On a power board, paying for 2 oz outer copper is usually cheaper and far more robust than contorting a layout to fit 2 mm traces past every connector and mounting hole.
+
+## Voltage drop is a second, separate budget
+
+Thermal width and electrical width are different calculations and you take the wider answer.
+
+A 2 mm wide, 1 oz trace, 100 mm long has a cross-section of about 0.07 square mm and a resistance near 25 milliohms. At 4A that is 98 mV of drop, and the ground return does the same thing again, so you lose close to 0.2V round trip. WS2812Bs keep running below 5V, but as the rail sags the white point drifts, and it drifts more at the far end of the chain than the near end. A matrix that looks faintly yellow in one corner at full white is usually a copper problem, not a firmware problem.
+
+It is also why the 5V input on MML-02 is a dedicated XT30, screw terminal or barrel jack, never the USB port. A Type-C receptacle is rated to 5A on VBUS, but pulling 4A through one means a PD controller, a 5A e-marked cable and a source that will actually offer it. That is three parts and a negotiation this board does not need in order to accept 5V from a barrel jack.
+
+## The narrowest point sets the temperature
+
+You can size the main run perfectly and still cook the board, because current does not care about your average width.
+
+- A copper pour is not automatically a wide conductor. What matters is the narrowest continuous cross-section between source and load. A pour squeezed to 0.4 mm to slip past a mounting hole is a 0.4 mm trace with a lot of decoration attached to it.
+- Thermal reliefs on power connector pads are four thin spokes. Four spokes carrying 4A is a heater. Use solid connections on high-current pads and accept the harder rework.
+- Vias are the other choke point. A 0.3 mm drill with 25 microns of plating has far less copper in its barrel than a 2 mm trace has in its cross-section. Treat a via as roughly 1A, and change layers with a field of them rather than one.
+- Watch the necks at fuse pads, sense resistors and connector transitions. Those are where the copper quietly narrows to whatever the footprint author felt like.
+
+## Design for the worst state, not the typical one
+
+The first thing anybody does with a new LED board is set it to full white to look for dead pixels. That state is the design case even when it is not the use case, and no firmware brightness cap is a substitute for copper.
+
+Short transients are more forgiving than they look, because copper has thermal mass and a few milliseconds of inrush into a bulk electrolytic does not heat a trace measurably. Sustained peaks do. A minute of full white is not a transient. Average current sizes your power supply; peak current sizes your copper, your connector and your fuse.
+
+> Choose the temperature rise you are willing to live with first. After that, trace width is just arithmetic.

@@ -1,0 +1,67 @@
+---
+title: "Bring-Up Order: Smoke, Rails, Buses, Firmware"
+date: "2026-06-22"
+readTime: "5 min read"
+tag: "Bring-up"
+excerpt: "Unpowered checks, a current-limited first power-up, rails one at a time, then buses, then firmware. The bring-up order that finds a mistake before it costs you the board."
+---
+Boards arrive from the fab and the temptation is to plug them in. Don't. A new design contains an unknown number of mistakes, and the cheapest moment to find them is before any energy is in the board. The sequence below exists for one reason: when something goes wrong, only one thing can have caused it.
+
+## Unpowered: eyes, then meter
+
+Under magnification, walk the board. Tombstoned passives, bridges on fine pitch, pin 1 orientation on every IC, the cathode band on every diode, polarity on electrolytics, connector orientation. Compare against the assembly drawing, not against memory.
+
+Then the meter, in resistance mode, everything still unpowered:
+
+- Every rail to ground: 24 V, 5 V, 3V3. A rail with bulk capacitance reads a few ohms and climbs as the meter charges the cap — that is normal. A rail that sits at half an ohm and stays there is a short.
+- Rail to rail: 5 V to 3V3, 24 V to 5 V. These should never read low.
+- Input to ground with the leads reversed, if the board claims reverse-polarity protection. Verify the claim now, while it is free.
+
+Continuity from the input terminal through the protection chain is worth another 30 seconds. On MML-03 that path is screw terminal, polyfuse, TVS, Schottky — four parts that can each be missing, backwards or cold-jointed.
+
+## First power: watch the current, not the board
+
+Use a bench supply with an adjustable current limit. Set the voltage to the nominal input, then set the limit just above what the board should idle at — for MML-03 at 24 V, around 100 mA, generous for a buck's quiescent draw plus an idle LDO.
+
+Bring the voltage up and watch the supply's current display, not the board. If it drops into constant current, the limit did its job: kill it and go find the short. That single habit is what stands between a rework and a scrapped board.
+
+## Rails in order, working inward
+
+Verify from the connector toward the load, one node at a time:
+
+```text
+24V terminal -> polyfuse -> Schottky (0.3-0.5 V drop) ->
+buck -> 5.0 V -> AP2112K -> 3.3 V -> module 3V3 pin
+```
+
+Each measurement should match the documented power tree before you move to the next one. If 5 V reads 4.6 V, stop there. Nothing downstream is worth measuring yet.
+
+Check ripple with a short ground spring, not the long ground clip. The clip forms a loop that picks up the buck's switching field and shows you noise that is not actually on your rail.
+
+Where the design allows it, feed a downstream section through a 0 ohm jumper or a ferrite so the rail is proven before the load ever sees it. Leaving that one part off for first power-up is close to free insurance.
+
+## Thermal, one minute in
+
+Let it idle for a minute, then sweep the back of a finger across every part, or use a thermal camera. Warm is expected on the inductor and the LDO; anything else warm is information.
+
+Do the arithmetic before calling it a fault: an AP2112K dropping 5 V to 3.3 V at 200 mA dissipates 1.7 V times 0.2 A, which is 0.34 W. In SOT-23-5 at roughly 235 C/W that is about an 80 C rise — too hot to touch and around 80 percent of the package's dissipation rating, yet still the expected answer for that drop and that current. Use an IR thermometer here rather than a finger, and if the number bothers you the fix is a buck upstream, not a bigger LDO.
+
+## Buses before firmware
+
+With the rails proven, bring up the digital plumbing:
+
+- I2C: run a bus scan. On MML-01 it should return exactly the BME280 at 0x76 or 0x77 depending on the SDO strap, plus the second sensor's address. Nothing found usually means missing pull-ups or the wrong pins; every address responding means SDA is stuck low.
+- Check the idle level and rise time on a scope. With one 4.7k pull-up pair at 3.3 V, rise time must be under 1000 ns for 100 kHz and under 300 ns for 400 kHz. Too slow means too much bus capacitance or too weak a pull-up — and it is one pull-up pair per bus, not per device.
+- Serial: confirm the USB or UART path and the boot straps. On MML-01, BOOT and RESET have to actually drop the ESP32-S3 into download mode, and the first flash attempt is that test.
+
+## Minimal firmware, then the real thing
+
+Load the smallest program that proves one fact. A blink, or a serial print. Then a single sensor read. Only then the real firmware.
+
+On MML-02 the matrix runs at low brightness from a current-monitored supply before WLED is ever installed, because an 8x8 WS2812B panel at full white draws roughly 3.8 A — a number to measure, not assume — and WLED's current limit gets set from what the meter said. On MML-03, Tasmota comes up with the opto-isolated outputs unloaded and each channel gets exercised one at a time. On MML-01, ESPHome goes on only after the I2C scan has already named both sensors.
+
+## What makes this fast
+
+Test points on every rail and every bus, a power tree documenting expected voltage and current per branch, readable silkscreen labels, and a bring-up checklist committed alongside the KiCad project. That paperwork is not decoration. It is the difference between a 20-minute bring-up and a day of guessing.
+
+> Power up into a current limit, prove one rail at a time, and never populate a load before the rail feeding it has been measured.

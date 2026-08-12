@@ -4,7 +4,7 @@ import { PCB, CONTACT_STEPS } from "./pcbData";
 
 export default function Contact() {
   return (
-    <section id="contact" className="relative py-24 sm:py-32 px-6">
+    <section id="contact" className="relative py-20 sm:py-28 px-6">
       <ScrollFadeIn>
         <div className="max-w-5xl mx-auto">
           <SectionHeading eyebrow="Contact" title="Let's put your board into production.">

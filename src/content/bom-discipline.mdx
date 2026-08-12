@@ -1,0 +1,59 @@
+---
+title: "BOM Discipline: Part Numbers That Survive Assembly"
+date: "2026-07-06"
+readTime: "5 min read"
+tag: "Manufacturing"
+excerpt: "Every BOM line needs a real MPN and a distributor code, checked for stock and lifecycle before you commit a footprint. The discipline that keeps an assembly job from stalling."
+---
+A bill of materials whose part column says "10k 0603" and "100nF" is a wish list, not a build package. Somebody at the assembly house has to turn every one of those lines into a physical reel, and if you did not decide which part it is, they will either decide for you or stop the job and send an email. Both cost you a week. The BOM is the document that converts a design into hardware, and it deserves the same rigor as the schematic.
+
+## Two numbers per line, not one
+
+Every line needs a manufacturer part number and a distributor or assembler order number.
+
+The MPN — say, Murata GRM188R71H104KA93D — identifies the part unambiguously: dielectric, tolerance, voltage rating, package, all of it. The distributor number, an LCSC C-code or a Digi-Key or Mouser order code, identifies the thing that will physically arrive in a bag. They do different jobs and you need both.
+
+For JLCPCB assembly the C-number is the field that actually gets used; a shop buying through Digi-Key or Mouser needs the MPN. Include both and the package works either way.
+
+The other columns: reference designator, value, footprint, quantity, and a short note only where something is unusual — polarity, hand-solder, do-not-populate. A comments column full of prose is a column nobody reads.
+
+## Check stock and lifecycle before you commit the footprint
+
+The expensive mistake is choosing the exact part after layout. A footprint decision propagates: pad geometry, courtyard, keepout, thermal relief, sometimes the placement of a whole corner.
+
+Before you place the symbol, check three things.
+
+- Stock right now, in the quantity you need, at the vendor you will actually order from.
+- Lifecycle status. NRND, not recommended for new designs, or a last-time-buy notice means this design gets exactly one build.
+- Whether a pin-compatible second source exists in the same footprint. A regulator in SOT-23-5 with three alternates beats a unique part in a unique package.
+
+## Basic vs extended parts, and what that costs
+
+JLCPCB splits its library into basic parts, already loaded on the machines, and extended parts, which get pulled from the shelf and loaded for your job. Most unique extended parts add a feeder setup fee, charged per part type rather than per placement. JLCPCB's preferred-extended tier is the exception, and the fee schedule changes, so confirm it at quote time. Ten extended resistor values cost ten setups even if each is placed once. Ten extended resistor values cost ten setups even if each is placed once.
+
+So spend the extended budget where it buys something. If a part like the ESP32-S3 module, the AP2112K-3.3 or the USBLC6-2SC6 does land in the extended tier, it earns its setup fee. Generic passives do not. Walk the BOM and ask of every extended passive whether a basic-library value gets the same result. It usually does, because you rarely need a 4.75k when 4.7k works.
+
+## A value is not a specification
+
+"100nF" describes maybe a third of the part. The rest:
+
+- Dielectric. X7R holds within 15 percent from -55 to +125C. X5R does the same up to +85C. Y5V is specified at +22/-82 percent, meaning a Y5V part can legally deliver 18 percent of its marked capacitance and still pass. Never put Y5V in a decoupling, filtering or timing position. C0G/NP0 is the stable class and is only practical at small values.
+- Voltage rating, with real derating. A ceramic sitting on a 5V rail wants 16V or 25V, not 6.3V.
+- DC bias derating, the one that bites. An MLCC loses capacitance as DC voltage appears across it, and the smallest packages lose the most: a 10uF 0402 X5R rated 6.3V can behave like 3uF or less at 3.3V. Read the bias curve and go up a package size or a voltage rating.
+- Tolerance. One percent for dividers and regulator feedback networks, five percent for everything else.
+
+Resistors want the same treatment: tolerance, power rating, and for anything sensing current, temperature coefficient.
+
+## Designators, the CPL, and DNP
+
+The pick-and-place file lists a designator, X, Y, rotation and layer for every placed part. The assembler joins it to the BOM on the designator string, and that join is exact and case-sensitive. R1 is not r1, and a designator present in one file but missing from the other is a stopped line.
+
+One rule prevents nearly all of this: regenerate the BOM and the position file together, from the same board file, at the same moment, every time. Re-annotate the schematic after exporting and both files are stale.
+
+Do-not-populate needs an explicit convention, because a blank cell invites a guess. Keep the footprint, keep the designator, mark it DNP in the schematic, exclude it from both the BOM and the position file, then list it by designator in the assembly notes as intentionally unpopulated. On MML-03 the optional RS-485 transceiver and its termination are exactly that: the copper is there, the parts are a build option, and one line in the notes means nobody has to ask.
+
+## The check before you send
+
+Read the BOM cold, one line at a time, and answer two questions. Can someone who has never seen my design buy this exact part today? Does the designator appear in the position file, spelled identically? Yes on every line means the package is ready.
+
+> If a line on your BOM can be satisfied by two different parts, you have not finished designing the board.

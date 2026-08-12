@@ -1,0 +1,64 @@
+---
+title: "3.3V Logic, 5V LEDs: Level Shifting Done Right"
+date: "2026-06-29"
+readTime: "5 min read"
+tag: "Signals"
+excerpt: "A 3.3V GPIO sits 200 mV below what a 5V WS2812B needs. Why that passes on the bench and fails in the field, and why a 74AHCT125 — not a FET shifter — is the fix."
+---
+The WS2812B datasheet specifies a logic high on DIN of 0.7 times VDD. Run the LEDs from 5 V and that threshold is 3.5 V. An ESP32 GPIO puts out 3.3 V. The signal is already 200 mV short before trace drop, ringing, part-to-part variation or temperature.
+
+It usually works anyway. That is exactly the problem — a board that looks perfect on the bench and starts dropping frames or flashing wrong colors twenty minutes into a warm enclosure.
+
+## The margin is negative, not tight
+
+That threshold is set by a comparator on a die, and it moves with temperature and process lot. Some reels latch a 3.3 V input reliably at room temperature; others do not at 45 C in a sealed case. No bench test on ten boards tells you what the eleventh does in a customer's enclosure.
+
+The failure also hides well. Only the first LED sees your marginal signal — every LED after it is driven by the previous one's output, a clean 5 V CMOS push-pull drive. So the entire array misbehaves because of one pin on one part, and the symptom reads like data corruption elsewhere.
+
+## The two workarounds that aren't
+
+Dropping the LED supply with a series diode is the classic trick: lose 0.7 V so VDD is 4.3 V and the threshold falls to about 3.0 V. It works electrically, but the diode carries the full array current — an 8x8 matrix at full white pulls roughly 3.8 A, so that diode burns about 2.7 W for no functional reason, and costs brightness too.
+
+Sacrificing the first LED as a level shifter is the other: feed it a marginal 3.3 V and take DOUT for the rest of the chain. That does not remove the marginal link, it moves it to the one part you cannot easily probe or replace.
+
+## 74AHCT125: the T is the whole argument
+
+The right part costs about twenty cents. The 74AHCT125 is a quad buffer with three-state outputs, and the letters matter:
+
+- HCT inputs use TTL-compatible thresholds. At a 5 V supply, VIH minimum is 2.0 V. A 3.3 V drive becomes a comfortable high with 1.3 V of margin instead of a 200 mV deficit.
+- The output is a 5 V CMOS push-pull stage that swings essentially rail to rail and is rated to source or sink 8 mA, so it drives the line hard with fast edges.
+
+Note the T. A plain 74AHC125 uses CMOS input thresholds — 0.7 times VCC again — and buys you nothing. AHCT, not AHC: the most common substitution mistake on this circuit.
+
+Power the buffer from the 5 V rail; its output rail is what sets the output high level. Put a 100 nF ceramic right at its VCC pin, tie the unused output-enable pins to their active level, and never leave a spare CMOS input floating.
+
+## Why a bidirectional FET shifter is the wrong tool
+
+The BSS138-plus-two-resistors board sold as a "logic level converter" was designed for I2C: bidirectional, open-drain and slow. Its high level is not driven at all but pulled up through a resistor, so every rising edge is an RC curve.
+
+WS2812B data is a pulse-width code at 800 kbit/s:
+
+```text
+bit 0:  high 0.40 us, low 0.85 us
+bit 1:  high 0.80 us, low 0.45 us
+tolerance: roughly +/- 150 ns
+```
+
+A 10k pull-up into 50-100 pF of trace and input capacitance takes hundreds of nanoseconds to rise. That eats most of the timing budget and shifts the effective pulse width depending on where the threshold lands. This signal is unidirectional and fast — precisely what the FET shifter is not for.
+
+## Placement and the series resistor
+
+On MML-02 the matrix is onboard, so every run is short, but the ordering still matters:
+
+- Keep the 3.3 V run from the MCU to the buffer short. That is the low-margin segment.
+- Put the series resistor at the buffer output pin, not at the LED: series termination works against the driver's own output impedance, so it belongs at the driving end. With the buffer a couple of centimeters from the first LED, the two placements converge anyway.
+- 330R suits a short onboard run: into 100 pF of load that is a 33 ns time constant, small next to a 400 ns pulse. For a longer external run with more capacitance, drop to 33-100R so the edge stays fast while still damping the ringing.
+- Give the data trace continuous ground directly beneath it, never crossing a split in the pour, and tie LED ground and logic ground solidly together.
+
+One more coupling: the 5 V rail sets the buffer's output high level, and that rail also feeds an array that swings amps. Bulk capacitance at the LED power entry is not only about the LEDs — it keeps your logic high where it belongs.
+
+## The practical version
+
+Buffer with a 74AHCT125 powered from 5 V, series resistor at the buffer output, short data run over solid ground, and enough bulk capacitance that the rail does not sag under the array. A few cents against a failure mode that only shows up after delivery.
+
+> A 3.3 V signal into a 5 V WS2812B is not a tight margin, it is a negative one — and it will pass on the bench and fail in the field.

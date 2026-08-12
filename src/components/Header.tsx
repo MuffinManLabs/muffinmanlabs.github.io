@@ -7,7 +7,8 @@ const navLinks = [
   { href: "/#services", label: "SERVICES" },
   { href: "/#boards", label: "BOARDS" },
   { href: "/#skills", label: "SKILLS" },
-  { href: "/#standard", label: "THE STANDARD" },
+  { href: "/#about", label: "ABOUT" },
+  { href: "/blog", label: "NOTES" },
   { href: "/#contact", label: "CONTACT" },
 ];
 
@@ -32,7 +33,7 @@ export default function Header() {
       <nav className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
         <a href="/" className="flex items-center gap-3">
           <Image
-            src="/MuffinByteLabsLogo.png"
+            src="/logo-96.png"
             alt="MuffinByteLabs"
             width={30}
             height={30}

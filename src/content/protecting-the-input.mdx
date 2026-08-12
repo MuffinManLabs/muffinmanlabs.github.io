@@ -1,0 +1,54 @@
+---
+title: "Protecting the Input: Polyfuse, TVS, and Reverse Polarity"
+date: "2026-07-20"
+readTime: "5 min read"
+tag: "Power"
+excerpt: "Polyfuse, TVS, and reverse-polarity protection each cover a different failure, and the order matters. How I size and sequence all three on a 24V input."
+---
+Everything that goes wrong with a power input arrives through the connector: a supply wired backwards, a short downstream, a spike coupled from an inductive load on the same rail. Three cheap parts cover those failures, and each covers only its own. A polyfuse will not stop a transient, a TVS will not stop a sustained short, and neither stops a reversed supply.
+
+## The order, and why it is that order
+
+On MML-03 the 24V front end runs, from the screw terminal inward: PPTC, series Schottky, TVS, bulk electrolytic, buck.
+
+The fuse goes first because everything downstream, the TVS included, should sit behind overcurrent protection. A TVS fails short, and a short with nothing in front of it is a fire.
+
+The reverse-polarity element goes before the TVS so a backwards supply cannot forward-bias it. A unidirectional TVS looks like an ordinary diode in reverse: with the supply backwards it conducts hard and dissipates until the PPTC finally trips, which takes long enough that the TVS usually dies first.
+
+The tradeoff is real: the TVS now clamps slightly further from the connector, so keep that run short and its ground return short and wide. If the dominant threat is a large transient rather than a wiring mistake, putting the TVS at the connector and accepting crowbar behavior on reverse is defensible.
+
+## Polyfuse: slow, resettable, not transient protection
+
+A PPTC conducts when cold and goes high-resistance once self-heating pushes it past its transition. Three numbers matter.
+
+Hold current is what it passes indefinitely at 25C, and it derates hard with ambient — figure 60 to 75 percent of rated value inside a 60C enclosure. Size hold at 1.5 to 2x your real maximum load after derating.
+
+Trip current is where it reliably opens, and the time to get there runs from milliseconds to seconds depending on overload: several seconds near 2x hold, tens of milliseconds at 10x. Never microseconds, which is why it is useless against ESD or surge.
+
+Series resistance is the third number and it is not small: a sub-amp device can be several hundred milliohms of permanent drop and self-heating. A tripped PPTC never fully recovers either, resetting to a higher resistance than it started with. Its voltage rating must also exceed your supply, ruling out common 6V and 16V parts on 24V.
+
+On MML-02 that same front end feeds an 8x8 WS2812B matrix pulling roughly 3.8A at full white, where PPTC resistance and hold derating get expensive enough that a plain fuse wins.
+
+## TVS: standoff above, clamping below
+
+Standoff, VRWM, must sit above the highest voltage the rail legally reaches, including supply tolerance. A nominal 24V industrial rail is allowed to reach nearly 29V — IEC 61131-2 puts the 24V DC range at 20.4 to 28.8V — so a 30V standoff part such as an SMBJ30A fits. Below that, the TVS conducts in normal operation and cooks.
+
+Clamping voltage is the one people forget, and it must sit below what everything downstream survives. An SMBJ30A clamps at up to 48.4V at its rated 12.4A pulse, so a 40V-rated buck behind it is not protected, only nearby. You want a 60V switcher. An SMBJ33A buys standoff headroom but pushes clamping to about 53V, making that worse. The gap between standoff and clamping is the window your parts have to fit inside.
+
+Leakage at standoff is not zero either: a part like the SMBJ5.0A on MML-02 can leak hundreds of microamps, which matters on anything battery-powered. And the datasheet clamping figure assumes an ideal connection, so your real clamp is that number plus current times the resistance and inductance of your layout. Short, wide, direct return to connector ground.
+
+## Reverse polarity: Schottky or P-MOSFET
+
+A series Schottky is one part and it always works, at a forward drop of 0.3 to 0.5V. On a 24V rail that is about two percent and thermally trivial at a few hundred milliamps, which is why MML-03 uses one; on 5V the same drop is eight percent. Rate its reverse voltage above the supply with margin, and remember reverse leakage climbs steeply with temperature.
+
+Above roughly an amp, use a P-channel MOSFET. Drain to the incoming supply, source to the load, so the body diode conducts in the normal direction. Gate to ground through 10k to 100k gives a large negative gate-source voltage and turns the FET fully on. Reverse the supply and gate-source goes to zero: FET off, body diode reverse-biased. At 24V add a Zener from gate to source, since most P-FETs are rated 20V gate-source maximum. The drop then becomes current times RDS(on): 50 milliohms at 1A is 50 mV, against 400 mV for the Schottky.
+
+## Bulk capacitance and hot plug
+
+Put the bulk electrolytic after the protection and rate it well above the rail. Hot-plugging lets the supply cable's inductance ring against the bulk capacitor, and that LC can overshoot toward twice the input voltage — on 24V, a transient near 48V that kills a 25V or 35V part on the bench with nothing actually faulty. Use 50V. One more thing the TVS quietly covers.
+
+## The takeaway
+
+Size the polyfuse from your derated maximum load, the TVS from the gap between rail maximum and downstream rating, and the reverse element from your current level, then put the bulk behind all three.
+
+> A polyfuse is not transient protection and a TVS is not overcurrent protection — each is only insurance against its own failure.

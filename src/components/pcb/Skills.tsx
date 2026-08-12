@@ -4,7 +4,7 @@ import { PCB, SKILL_GROUPS } from "./pcbData";
 
 export default function Skills() {
   return (
-    <section id="skills" className="relative py-16 sm:py-20 px-6">
+    <section id="skills" className="relative py-20 sm:py-28 px-6">
       <ScrollFadeIn>
         <div className="max-w-5xl mx-auto">
           <SectionHeading eyebrow="Skills" title="What I bring to your board.">

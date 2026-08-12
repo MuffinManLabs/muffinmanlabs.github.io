@@ -177,7 +177,7 @@ export default function PCBHero() {
 
         {/* value prop on near-black substrate (legibility) */}
         <p className="mt-9 mx-auto max-w-[46ch] text-center text-lg sm:text-xl leading-relaxed text-[#d6d3cd]/85">
-          Five-plus years in the PCB industry. I take a circuit idea or prototype and hand back a{" "}
+          I take a circuit idea or prototype and hand back a{" "}
           <span style={{ color: PCB.enig }}>clean, manufacturable production package</span> — native
           KiCad source, Gerbers, drill, BOM with LCSC part numbers, CPL, and DRC/ERC-clean proof —
           documented like a datasheet and organized to the file.

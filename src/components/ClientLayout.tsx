@@ -8,8 +8,13 @@ export default function ClientLayout({
 }) {
   return (
     <>
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
       <Header />
-      <main className="relative z-10">{children}</main>
+      <main id="main" className="relative z-10">
+        {children}
+      </main>
       <Footer />
     </>
   );

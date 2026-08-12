@@ -16,11 +16,13 @@ const geistMono = Geist_Mono({
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
+  // real display cuts at large sizes instead of the default middle setting
+  axes: ["SOFT", "WONK", "opsz"],
 });
 
 const TITLE = "MuffinByteLabs — KiCad PCB Design";
 const DESCRIPTION =
-  "Premium KiCad PCB design — five-plus years in the industry. Native KiCad 8–10 boards, pre-fab design reviews, and revisions, delivered as JLCPCB/PCBWay-ready packages with datasheet-grade documentation and a money-back guarantee.";
+  "Premium KiCad PCB design. Native KiCad 8–10 boards, pre-fab design reviews, and revisions — delivered as JLCPCB/PCBWay-ready packages with datasheet-grade documentation and a money-back guarantee.";
 const SITE = "https://muffinbytelabs.com";
 
 export const metadata: Metadata = {
@@ -45,13 +47,13 @@ export const metadata: Metadata = {
     siteName: "MuffinByteLabs",
     type: "website",
     locale: "en_US",
-    images: [{ url: "/MuffinByteLabsLogo.png", width: 1024, height: 1024, alt: "MuffinByteLabs — KiCad PCB design" }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "MuffinByteLabs — KiCad PCB design" }],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    images: ["/MuffinByteLabsLogo.png"],
+    images: ["/og.png"],
   },
 };
 

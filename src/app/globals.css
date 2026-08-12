@@ -60,9 +60,47 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), sans-serif;
-  /* perfboard texture — a faint grid of plated holes */
-  background-image: radial-gradient(rgba(232, 168, 92, 0.045) 1px, transparent 1.3px);
+}
+
+/* perfboard texture — a fixed layer that dissolves toward the edges so the
+   grain reads as depth near the top of the view instead of tiling everywhere */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(232, 168, 92, 0.05) 1px, transparent 1.3px);
   background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(125% 90% at 50% 0%, #000 0%, rgba(0, 0, 0, 0.35) 55%, transparent 85%);
+  mask-image: radial-gradient(125% 90% at 50% 0%, #000 0%, rgba(0, 0, 0, 0.35) 55%, transparent 85%);
+}
+
+/* keyboard focus — ENIG ring, never the default blue */
+:focus-visible {
+  outline: 2px solid var(--enig);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* skip link: invisible until focused */
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 100;
+  transform: translateY(-160%);
+  transition: transform 0.2s ease;
+  background: var(--enig);
+  color: #1a1405;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
 }
 
 /* Engraved-gold display text */
@@ -99,7 +137,8 @@ body {
 .fab-card:hover {
   border-color: rgba(212, 175, 55, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 1px 0 rgba(234, 230, 218, 0.08) inset, 0 14px 34px -18px rgba(0, 0, 0, 0.85);
+  /* a lifted card casts a LARGER, softer shadow — not a smaller one */
+  box-shadow: 0 1px 0 rgba(234, 230, 218, 0.08) inset, 0 26px 50px -22px rgba(0, 0, 0, 0.9);
 }
 .fab-card:hover::before { opacity: 1; }
 

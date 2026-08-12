@@ -106,7 +106,7 @@ const LAYER_TABS: { key: GerberLayer; label: string }[] = [
 
 export default function BoardsGallery() {
   return (
-    <section id="boards" className="relative py-24 sm:py-32 px-6">
+    <section id="boards" className="relative py-20 sm:py-28 px-6">
       <div className="max-w-5xl mx-auto">
         <ScrollFadeIn>
           <SectionHeading eyebrow="Portfolio" title="Three boards. Three client problems." gold>

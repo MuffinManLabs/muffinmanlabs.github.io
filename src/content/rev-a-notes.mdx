@@ -1,0 +1,58 @@
+---
+title: "REV_A Notes: Write Down What You’d Change"
+date: "2026-07-27"
+readTime: "4 min read"
+tag: "Bring-up"
+excerpt: "The friction you notice during assembly disappears from memory within a week. A REV_A notes file and a CHANGES log keep it, and handing both to a client builds trust rather than doubt."
+---
+Every board teaches you something during assembly and bring-up, and you will forget almost all of it. Not the big failures, you remember those. You forget the small friction: the terminal block you could barely get a screwdriver into, the reference designator hidden under a header, the test point you wished you had at midnight with a probe in each hand. Six weeks later you open the project to spin the next revision and you rediscover every one of them from scratch.
+
+The fix is boring and it works. A plain text file that lives in the repository next to the KiCad project, written while the board is still on the bench.
+
+## Write it during bring-up, not after
+
+REV_A_notes.md sits in the repo root, beside the .kicad_pro. It is not a design document and it is not a report. It is a running log, and the only rule is that entries get written the moment you notice something. If you wait until the end of bring-up, you capture the last hour of it and nothing else.
+
+Three things per entry: what I observed, why it matters, what I would change.
+
+```text
+2026-07-14  USB-C / battery corner
+Observed: JST-PH housing sits about 2 mm from the USB-C shell; a
+right-angle USB cable fouls the battery lead.
+Why: makes bench work with battery and USB connected awkward, which
+is exactly the charge-test case.
+Change: move JST-PH to the opposite board edge, or rotate 90 degrees.
+```
+
+## What actually goes in it
+
+- Assembly ergonomics. Part-to-part spacing you could not get a tweezer or an iron into, connectors that block each other, screw terminals facing the wrong way relative to the enclosure wall.
+- Missing measurement points. On MML-02, the only way to measure 5 V droop with the 8x8 WS2812B matrix at full white, which is roughly 3.8 A, was to clip onto the screw terminal. A 1 mm test pad on the 5 V pour at the far end of the board would have taken thirty seconds to place.
+- Footprint reality. Pad length for hand soldering, pin-1 markings still visible after assembly, thermal pad and via count under a regulator that ran hotter than the calculation suggested.
+- Silkscreen. Designators hidden under the part they name, polarity marks covered by the connector body, no pinout printed next to a header that someone else has to wire.
+- Electrical margin. Rails measured under real load, not at idle. Ripple with the load switching. LDO case temperature after ten minutes.
+- Mechanical. Mounting holes versus the standoffs you actually own, connector reach, board outline against the enclosure boss you forgot.
+
+## "It passed DRC" is not "it is good"
+
+Design rule check verifies the rules you gave it: clearances, widths, drill sizes, courtyard overlaps. That is a real and necessary gate, and JLCPCB's standard process is comfortable at 6 mil trace, 6 mil space, 0.3 mm drill, so passing it is not hard.
+
+What DRC cannot see is intent. It does not know that the polyfuse blocks screwdriver access to the terminal block, that the reset button ends up under the lid, that the 5 V pour necks down to 20 mil where it crosses under a connector, or that the I2C pull-ups were sized against a bus capacitance nobody ever added up. No checker will ever flag those. Your notes file is the only place that judgment gets recorded.
+
+## CHANGES.md across spins
+
+The notes file is per-board. The changes file is across revisions, newest entry first, and each entry says: revision, date, what changed, why it changed, and what it touches. Schematic, layout, BOM, firmware, fab package.
+
+That second file is what lets you answer, a year later, why a resistor is 120 ohm and not 100 ohm. It is also what lets a client diff two fab packages without reverse-engineering the Gerbers.
+
+## Why handing this over is a trust signal
+
+A designer who ships a notes file is a designer who was measuring. Silence about a board's rough edges is not evidence of perfection; it is evidence that nobody wrote anything down. A client who has been burned before will recognize the difference immediately.
+
+It also protects both sides. When the known limitations are listed in the hand-off, everyone can tell a documented trade-off from a defect, and the scope of a revision conversation stops being a negotiation about blame.
+
+## The practical takeaway
+
+Create REV_A_notes.md before you power the board on, keep it open on the bench, and write one line every time something annoys you. Roll the resolved items into CHANGES.md when you spin the next revision, and ship both files with the project.
+
+> A board that passed DRC is manufacturable; a board with honest revision notes is maintainable.

@@ -1,0 +1,66 @@
+---
+title: "One Pull-Up Pair Per I2C Bus"
+date: "2026-05-11"
+readTime: "4 min read"
+tag: "Signals"
+excerpt: "Four breakouts with 4.7k pull-ups give you a 1175 ohm bus. Here is the math, the 967 ohm floor at 3.3 V, the rise-time ceiling, and how to fix a bus that already has too many."
+---
+The most common mistake on an I2C schematic is not a swapped pin or a missing decoupling cap. It is four pull-up pairs on a bus that needs one. Every breakout brought its own, nobody removed any of them, and the bus ends up with a pull-up value the designer never chose.
+
+I2C is open drain. No device on the bus ever drives SDA or SCL high. Devices only pull low, through a transistor to ground, and the line returns high because a resistor pulls it toward VDD. That resistor belongs to the bus, not to the chip.
+
+## The parallel math
+
+Put four 4.7k pull-ups in parallel and you get 4700 / 4 = 1175 ohms. Not 4.7k. Every module you add makes the pull-up stronger, and nothing in the schematic looks wrong while it happens.
+
+Now the sink side. The I2C specification says a device must hold its low-level output voltage at or below 0.4 V while sinking 3 mA. Turn that around and you get the minimum sensible pull-up resistance for the whole bus:
+
+```text
+Rmin = (VDD - 0.4 V) / 3 mA
+```
+
+At 3.3 V that is 2.9 / 0.003 = 967 ohms. At 5 V it is 4.6 / 0.003 = 1533 ohms.
+
+So four 4.7k pairs on a 3.3 V bus land at 1175 ohms. Above the floor, but with almost no margin left. Add a fifth module and you are at 940 ohms, which is below it. On a 5 V bus, four pairs are already out of spec before you add anything at all.
+
+And 3 mA is what the specification demands, not what every part delivers. Plenty of small sensors, GPIO expanders and microcontroller pads sink considerably less and sit at a higher low-level voltage. Once the low stops getting below the input low threshold, which is 0.3 x VDD, or 0.99 V on a 3.3 V bus, the receiver no longer sees a valid low.
+
+What you observe is never a clean failure. It is a bus that enumerates perfectly on the bench, then NACKs at 40 C, or locks up after an hour, or works fine until the fourth board is plugged in.
+
+## The other end of the trade: rise time
+
+Weak pull-ups fail the opposite way. The line rises through an RC formed by the pull-up and the total bus capacitance, which includes pads, traces, cable, and every device's pin capacitance.
+
+Measured the way the standard measures it, from 0.3 to 0.7 x VDD, the rise time is:
+
+```text
+t = 0.8473 x R x C
+```
+
+The budgets are 1000 ns at 100 kHz standard mode, 300 ns at 400 kHz fast mode, and 120 ns at 1 MHz. Maximum bus capacitance is 400 pF in standard and fast mode, 550 pF in fast-mode plus.
+
+Work an example. 4.7k with 50 pF of bus capacitance gives 0.8473 x 4700 x 50 pF = 199 ns, comfortable at 400 kHz. The same 4.7k with 100 pF gives 398 ns, which misses the fast-mode budget and only works at 100 kHz. With a 4.7k pull-up, your entire 400 kHz rise budget is spent at about 75 pF.
+
+That is exactly why 4.7k at 3.3 V is a good default for a short on-board bus. It sits between the 967 ohm floor and the capacitance ceiling with room on both sides, for the few tens of picofarads that a few centimeters of trace actually carry. It stops being a good default the moment you add a meter of cable.
+
+## Modules that bring their own
+
+Read the schematic of every breakout going on the bus. Most vendors publish them. Values vary a lot: 10k, 4.7k and 2.2k are all common, and mixed values still parallel down to something small.
+
+Then pick one pull-up pair for the entire bus and remove the rest. Most breakouts have either a solder jumper you can cut or a pair of 0402s you can drag off with a hot iron. If a module's resistors are genuinely unreachable, budget deliberately: keep that module's pair, strip every other one, and check the result against the 967 ohm floor.
+
+If you are designing the board rather than wiring modules together, the problem mostly disappears. Put the sensors on your own PCB and place one pull-up pair near the controller.
+
+## How MML-01 does it
+
+MML-01 runs a BME280 and a second sensor on one shared I2C bus off the ESP32-S3. There is a single 4.7k pull-up pair on the whole board, placed near the microcontroller, and neither sensor contributes one, because there is no breakout involved. The parts sit on my PCB, not on somebody else's.
+
+That is the whole trick. The pull-up pair is a property of the bus, so it is drawn once, in one place, and it appears exactly once in the BOM.
+
+If a sensor has to live off-board on a header, the cable becomes part of the bus capacitance. Keep it short, keep the clock at 100 kHz, and recompute the rise time before assuming it is fine.
+
+## The practical version
+
+Count the pull-ups on your finished schematic. If the number of resistors tied to SDA is anything other than one, fix it before you route.
+
+> Pull-ups belong to the bus, not to the device: one pair, chosen on purpose.

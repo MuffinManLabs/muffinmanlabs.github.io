@@ -1,0 +1,52 @@
+---
+title: "Buck Converter Layout: The Loop That Matters"
+date: "2026-06-15"
+readTime: "5 min read"
+tag: "Power"
+excerpt: "The hot loop — input cap, high-side switch, return path — is the one thing in a buck layout that has to be physically tiny. How I lay out the 24V to 5V stage on MML-03."
+---
+A buck converter schematic is nearly copy-paste: the IC, an inductor, an input cap, an output cap, a feedback divider, every value off the datasheet. Then the board comes back with 800 mV of ringing on the 5 V rail, a switch node overshooting past the IC's absolute maximum, and enough radiated noise to upset an ADC three centimeters away. The schematic was fine. The layout put a loop in the wrong place.
+
+## Which loop is hot
+
+Draw the current path while the high-side switch is on: out of the input capacitor, through the switch, into the inductor, through the load, back to the input capacitor's negative terminal. Now draw it when the switch turns off: the inductor current freewheels through the low-side FET or catch diode, and the input capacitor is out of the picture entirely.
+
+That difference is the whole story. The input capacitor, the high-side switch, the low-side FET or diode, and the ground return between them form a loop whose current slams from full inductor current to zero and back, hundreds of thousands of times a second. That is the hot loop. The output loop — inductor to output capacitor to load — carries continuous current with a small triangular ripple. It is calm — keep it short and wide for DC drop and ripple, but it will not ring or radiate the way the input loop does.
+
+Loop area is what turns di/dt into a problem. A trace over a plane runs roughly 1 nH per millimeter. At 500 kHz, a 1 A load and 20 ns edges, di/dt is about 50 A/us — so ten extra millimeters of loop perimeter, about 10 nH, adds half a volt of spike on top of your input voltage on every edge. Switch node overshoot and radiated EMI both come from there, and output filtering cannot fix it.
+
+## Place the input capacitor first
+
+Before the inductor, before anything else: put the high-frequency ceramic input capacitor across the IC's VIN and GND pins with the shortest, widest connection the footprints allow. It closes the hot loop, so its placement defines the loop.
+
+The bulk electrolytic is not that capacitor. It is too far away and too inductive to service a 20 ns edge; its job is holding the rail up during load steps. On MML-03 the 24 V input passes a polyfuse, a TVS and a series Schottky for reverse polarity, then the bulk electrolytic, and only then a 10 uF X7R ceramic sitting directly on the buck's input pins. Rate that ceramic for at least 50 V — X7R loses a large fraction of its capacitance under DC bias, so a 25 V part running at 24 V is a 10 uF part behaving like a 3 uF part.
+
+## The switch node is an antenna, not a bus
+
+SW is the one net with a hard dV/dt: 24 V in 15 ns is more than 1 V/ns. Copper there is a capacitively coupled transmitter. Make it just big enough to carry the inductor current and, if the IC needs it, to pull heat out — and no bigger. Do not pour a polygon on it because the area looked empty. Put the inductor right next to the pin.
+
+Then keep everything else away: nothing sensitive under SW, under the inductor, or parallel to either. A four-layer stackup lets you cross on another layer with ground in between. On a 2-layer board like MML-03 you have no shield, so your only tool is distance.
+
+## Feedback is the quiet net
+
+The FB pin is high impedance and compares against a reference with a noise budget measured in millivolts. Three rules:
+
+- Put the divider physically at the IC, not out by the output cap. Only the sense tap travels.
+- Take the sense point where you actually want regulation: the output capacitor terminal, not the inductor pin.
+- Route FB away from SW, out from under the inductor, and give it ground on at least one side if the space exists.
+
+## Ground: one return, one join
+
+Power ground is the input cap return, the low-side return and the output cap return, kept in one tight region directly under the hot loop. Signal ground — the divider bottom, the enable and soft-start parts, the IC's analog ground — joins that region at a single point at the IC.
+
+On a 2-layer board the bottom pour is your return path, so make sure no trace slices through it and forces the hot loop's return current to detour around the cut. A return that goes the long way has just enlarged the loop you spent the whole layout shrinking.
+
+For heat, drop a small array of 0.3 mm vias into the thermal pad with copper on the far side. 0.3 mm drills and 6 mil trace and space are inside JLCPCB's standard process, so it costs nothing.
+
+## Copy the datasheet figure
+
+Every serious regulator datasheet includes a recommended layout figure, and eval board gerbers are usually a free download. That figure already encodes the hot loop, the ground scheme and the feedback routing. Start there.
+
+Deviating is allowed, but you should be able to say why out loud: "the connector had to be on the other side" is a reason, "it routed easier" is not.
+
+> If you get one thing right in a buck layout, make the input capacitor, the switch and the return path a loop small enough to cover with a fingertip.

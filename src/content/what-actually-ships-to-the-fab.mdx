@@ -1,0 +1,67 @@
+---
+title: "What Actually Ships to the Fab"
+date: "2026-04-13"
+readTime: "5 min read"
+tag: "Manufacturing"
+excerpt: "A fab never opens your .kicad_pcb. Here is every file that actually ships (Gerbers, Excellon, BOM, CPL, docs, DRC proof) and what each machine on the other end does with it."
+---
+The board is not the deliverable. The package is.
+
+No fabricator opens your `.kicad_pcb` file. They open a folder of machine-readable files and hand each one to a different machine: a photoplotter, a CNC drill, a stencil cutter, a pick-and-place. If one file in that folder is missing, misnamed, or inconsistent with the others, the job either stalls in the fab's engineering-query queue or gets built wrong at your expense.
+
+## Gerbers: RS-274X, one file per layer
+
+Gerber is a 2D vector format. RS-274X embeds aperture definitions inside the file itself, so there is no separate aperture list to lose. X2 adds attributes naming each layer's function, so the CAM operator never has to infer your stackup from filenames.
+
+A two-layer board ships at least eight plots:
+
+- F.Cu and B.Cu, the copper imaged onto photoresist
+- F.Mask and B.Mask, soldermask openings drawn as clearances rather than as mask
+- F.Silkscreen and B.Silkscreen, the legend ink
+- F.Paste, which laser-cuts the assembly stencil and is ignored by the bare-board process entirely
+- Edge.Cuts, the outline that programs the routing bit or the v-score
+
+Edge.Cuts is where most first packages fail. The outline has to be a closed contour, no gaps, no doubled-up lines, no stray segments left behind on that layer. Internal cutouts and routed slots belong on the same layer, each as its own closed contour. A fab cannot infer a board shape from an open polyline, so they stop and ask, and you lose two days. While you are there, check that no silkscreen lands on exposed pad: the fab clips it automatically, and the clipped version is what arrives.
+
+## Excellon: the drill file, plus the map
+
+Drills ship as Excellon, a tool table followed by coordinates. Export in millimeters, absolute coordinates, decimal format. Zero suppression is a decades-old source of 10x scaling errors and has no reason to survive.
+
+Plated and non-plated holes are different processes: a via gets copper deposited down the barrel, an M3 mounting hole does not. Export them so the fab can tell which is which, and include the drill map PDF so a human can sanity-check tool sizes.
+
+One convention worth internalizing: the number in the drill file is the finished hole size. The fab drills oversize and plating brings it back down. Do not pre-compensate, or you get holes 0.1 mm too large and a connector that rattles.
+
+## BOM: one row per unique part, with a real part number
+
+"10k 0603" is not a purchasable part. An assembly BOM needs, per row: grouped reference designators, quantity, value, footprint, manufacturer, manufacturer part number, a distributor or LCSC code where the part is stocked (AP2112K-3.3TRG1 is LCSC C51118, for example), and an explicit DNP flag on anything that should not be placed.
+
+The fields people skip are the ones that fail on the bench:
+
+- Dielectric and voltage rating. A 10 µF 0603 X5R rated 6.3 V is not interchangeable with one rated 25 V, and neither is Y5V.
+- DC bias derating. That same 10 µF 0603 X5R can measure 2 to 3 µF with 5 V across it. If it is holding an ESP32-S3 module up through a Wi-Fi transmit burst, the derated number is the real number.
+- Alternates. Name a second source for anything single-sourced, or the assembler picks one and does not ask.
+
+## CPL: where each part lands and which way it faces
+
+The centroid file, also called CPL or pick-and-place, is one line per placed component: designator, mid-X, mid-Y, layer, rotation. Its origin must match the origin used for the Gerbers, or the whole placement shifts and every part misses its pads.
+
+Rotation is the real trap. Zero degrees is whatever the library author decided, and assembly houses keep their own reference orientation for common packages: SOT-23-5, SOIC-8, electrolytics, diodes, LEDs. Polarized parts land 90 or 180 degrees off and nobody finds out until first power-on. Check every polarized part against the assembler's preview render before approving.
+
+## The human-readable half
+
+Machines consume the files above. People consume these:
+
+- Schematic PDF, for the assembler's engineer, for the client, and for whoever debugs the board in two years
+- 3D render and STEP export, for enclosure fit and for confirmation that this is the board you think you ordered
+- Fab notes or README: stackup, FR-4, 1.6 mm thickness unless stated otherwise, 1 oz copper, surface finish (HASL or ENIG), mask and silkscreen color, the minimum trace, space and drill actually used, and whether impedance control is required
+- REV notes: what changed since the last revision, and why
+
+If the design fits a standard process, say so in one line. "JLCPCB standard: 6 mil trace, 6 mil space, 0.3 mm minimum drill" tells the CAM operator immediately that no quote exception is needed.
+
+## Proof, not promises
+
+The last item in the folder is evidence: DRC clean with the fab's constraints actually loaded into board setup rather than KiCad defaults, zero unconnected nets, zero courtyard overlaps, and ERC clean on the schematic side. Export the reports and ship them.
+
+Then re-import your own package. Open the Gerbers and drill file in a viewer that is not KiCad, because the fab runs a different CAM engine than the one that wrote the files. Confirm the outline is closed, the drills land on pads, the layer count is right, and the CPL line count matches the placed parts on the BOM.
+
+> If a competent stranger cannot build the board without ever speaking to you, the package is not finished.

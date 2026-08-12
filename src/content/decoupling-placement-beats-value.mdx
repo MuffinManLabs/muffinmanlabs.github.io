@@ -1,0 +1,54 @@
+---
+title: "Decoupling: Placement Beats Value"
+date: "2026-07-13"
+readTime: "5 min read"
+tag: "Layout"
+excerpt: "Loop inductance, not capacitance, decides what a decoupling cap can do. Why a well-placed 100nF beats a bigger one two millimeters away, and what DC bias really costs you."
+---
+The schematic shows a 100nF from VDD to GND and that looks like a solved problem. It is not. What the IC experiences depends almost entirely on where that capacitor sits and how its current returns to the pin. A 100nF two millimeters away, reached through a trace to a via, is close to useless.
+
+## The capacitor is one leg of a loop
+
+A decoupling capacitor is not a component in isolation. It is one leg of a current loop: capacitor pad, trace, IC power pin, die, ground pin, via, plane, back to the capacitor's ground pad. When the die switches, the charge it needs travels that loop, and the loop's inductance decides how fast it arrives.
+
+Keep one number in your head: roughly 1 nH per millimeter of loop. Inductive impedance is 2 pi f L, so 1 nH is about 0.63 ohm at 100 MHz, where an ideal 100nF is about 0.016 ohm. Two nanohenries of layout — two millimeters of loop, which is nothing on a board — puts 1.3 ohm in series with a 0.016 ohm capacitor.
+
+That is eighty times the impedance of the part you selected. Geometry dominates; the value barely participates.
+
+## Where "capacitor" stops being true
+
+Every real MLCC is a series RLC: capacitance, ESR, and its own ESL, set mostly by body length — around 0.5 to 0.9 nH for an 0402, worse for larger packages.
+
+A 100nF 0402 with 0.6 nH of ESL self-resonates near 20 MHz. Below that it behaves like a capacitor, above it like an inductor. Add 2 nH of layout and the total is 2.6 nH: resonance falls under 10 MHz and the whole impedance curve lifts. You did not change the part, you changed the copper.
+
+## Placement rules that matter
+
+- Same side of the board as the IC, as close to the power pin as the footprints allow. Under 2 mm, ideally under 1 mm.
+- Via to the plane at the capacitor pad, not at the end of a short trace from it. A 1 mm trace to a via is 1 nH you did not need.
+- Route through the pad: plane via, capacitor pad, then IC pin, so the capacitor sits in the path instead of hanging off a tee stub.
+- Two vias per pad where there is room. Parallel vias roughly halve that inductance.
+- The return counts equally. Ground via at the ground pad, and no plane split or crowded via field forcing a detour. A perfect power path with a 20 mm return detour is still a 20 mm loop.
+- One capacitor per power pin, not one per chip. Each pin has its own package parasitics and its own local demand, so a QFN with four VDD pins gets four 100nF. An ESP32-S3 module presents a single 3V3 pin, so it gets one 100nF plus bulk beside it.
+- Two-layer boards are harder: the plane is a pour with routing cut through it. On MML-01 and MML-02 I place decoupling with the IC before routing anything.
+
+## Stacking values buys less than people expect
+
+The traditional advice, 100nF plus 10nF plus 1nF in parallel, assumes each capacitor covers its own band. Two problems. ESL is set by package, not by value, so three 0402s have nearly identical inductance and their resonances sit closer together than the values imply. And between the resonances of two paralleled capacitors sits an anti-resonance: one branch inductive, the other capacitive, forming a parallel tank whose impedance peaks. You can end up worse there than with a single capacitor.
+
+The better move is boring. Same value, more of them, smallest package you can reliably assemble, each tight to a pin. Ten well-placed 100nF 0402s beat three clever values crowded into one corner.
+
+## DC bias derating
+
+MLCC capacitance falls as DC voltage is applied, and small packages fall hardest. A 10uF 0402 X5R rated 6.3V may deliver 3 to 4uF at 3.3V, while the same value in 0805 at 25V loses far less. Class 2 dielectrics also age a couple percent per decade of hours and drift with temperature. Where capacitance genuinely matters — bulk on a rail, a regulator's required output capacitance, an LC filter corner — size from the bias curve, not the marking.
+
+## The ESP32 case
+
+The classic symptom: board boots, Wi-Fi associates, board resets. Transmit is bursty, and the module pulls short current peaks in the hundreds of milliamps over a much lower average. If the 3V3 rail sags past the brownout threshold during a burst, you get a reset that looks like a firmware bug and is not.
+
+Espressif's guidance for the WROOM modules is bulk capacitance plus a 100nF right at the 3V3 pin, 10uF being the usual floor. The regulator cannot help: an LDO or buck control loop is good to tens or hundreds of kHz, so anything faster than a few microseconds is handled by capacitors alone. On MML-01 the AP2112K-3.3 keeps its own caps close to itself, and the module gets its own bulk plus a 100nF at the pin.
+
+## The practical version
+
+Place decoupling before you route, at the same time as the IC: caps on the same side, vias in the pads, return via at the ground pad, power routed through them.
+
+> A well-placed 100nF beats a perfectly chosen capacitor two millimeters away.

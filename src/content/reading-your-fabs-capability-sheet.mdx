@@ -1,0 +1,67 @@
+---
+title: "Read the Fab Capability Sheet Before You Route"
+date: "2026-05-18"
+readTime: "5 min read"
+tag: "Manufacturing"
+excerpt: "Minimum trace, drill, annular ring, mask dam, silkscreen height: pull them off your fab's sheet into KiCad's Board Setup before you route, not after the gerber review."
+---
+KiCad ships with generic default design rules. Your fab publishes a specific capability sheet. The gap between those two documents is where most first-spin surprises live, and closing it costs about fifteen minutes, provided you do it before you route rather than after.
+
+Every fab publishes its capabilities: JLCPCB, PCBWay, OSH Park, Aisler, all of them. Read the page, copy the numbers into KiCad's Board Setup, and let DRC enforce them while you work. The alternative is discovering at gerber review that your 0.25 mm drills moved the order into an advanced process class, or that half your silkscreen was deleted.
+
+## The numbers worth copying down
+
+- Minimum trace width and spacing. On a two-layer JLCPCB board with 1 oz outer copper, 6 mil trace and 6 mil space (0.152 mm) is a boring, cheap, high-yield place to live. Published minimums go tighter, but tighter usually means a different process class and a different price.
+- Minimum drill and minimum annular ring. A 0.3 mm finished hole in a 0.6 mm pad, so a 0.15 mm ring, is the comfortable standard via. Smaller holes exist and cost more.
+- Copper-to-edge clearance. 0.2 mm is a common minimum; 0.3 to 0.5 mm is kinder, especially on V-scored panels where the score line wanders.
+- Soldermask dam and expansion. The dam is the thinnest strip of mask the fab can reliably print between two pads, commonly around 0.2 mm. Expansion is how much wider the opening is than the pad, typically about 0.05 mm per side. If a fine-pitch footprint asks for a dam thinner than the fab can print, the fab drops it and two neighboring pads share one opening.
+- Silkscreen minimum line width and text height. 0.15 mm line width and about 1 mm character height are safe. KiCad's default text is 1.0 mm tall with 0.15 mm thickness, which is not a coincidence. Go smaller and legends get clipped, smeared, or removed outright.
+- Stackup and finished copper weight. 1.6 mm, two layers, 1 oz outer copper is the default everyone quotes. Ordering 2 oz outer usually widens the minimum trace and space the fab accepts, often to around 8 mil — copper weight changes your routing, not just your checkout total.
+
+Capability sheets change. Check the current one for the fab and the process class you intend to order, not the number you memorized last year.
+
+## Copper weight is a routing constraint
+
+Copper weight decides how wide a trace has to be for a given current. IPC-2221 gives external-layer capacity as
+
+```text
+I = 0.048 x dT^0.44 x A^0.725
+```
+
+with area A in square mils, temperature rise dT in degrees C, and current in amps. IPC-2152 has since superseded IPC-2221 for conductor sizing and generally allows narrower traces for the same rise, so treat the 2221 numbers as the conservative answer. One ounce copper is 1.37 mil thick, so a 20 mil trace has 27.4 square mils of cross section.
+
+Run it for 1 oz outer copper and a 10 C rise:
+
+- 20 mil, or 0.5 mm, carries about 1.4 A
+- 55 mil, or 1.4 mm, carries about 3 A
+
+Which is why MML-02 does not route its 5 V rail as a trace at all. An 8x8 WS2812B matrix at full white draws roughly 3.8 A, and at that level on 1 oz copper you are drawing pours rather than tracks, then checking that the pour has a wide path from the XT30 pads to the far corner of the matrix instead of a thin neck that DRC is perfectly happy with.
+
+## Encode it in KiCad before the first track
+
+Board Setup, Constraints: minimum clearance, minimum track width, minimum via diameter and hole, minimum annular ring, minimum through hole, copper-to-edge clearance, minimum silkscreen text height and thickness. These come straight off the sheet.
+
+Board Setup, Net Classes: here the rules stop being a floor and start being a plan. A sensible starting set is a default class at 0.25 mm track, a power class at 0.5 mm or wider with larger vias, and a USB class with the right differential settings. Assign by pattern so new nets inherit the right class.
+
+Board Setup, Custom Rules: for constraints the fab does not care about but the design does. MML-03's opto-isolation gap is exactly that:
+
+```text
+(version 1)
+(rule "field-isolation"
+  (condition "A.NetClass == 'FieldIO' && B.NetClass != 'FieldIO'")
+  (constraint clearance (min 3mm)))
+```
+
+Now the isolation gap is enforced by DRC instead of by your memory at one in the morning.
+
+Then run DRC once on the empty board. It should come back clean. If it does not, your rules and your footprints already disagree, and you want to know that before 400 tracks are sitting on top of the problem.
+
+## What pushing tighter actually costs
+
+Below the standard envelope you are usually buying four things: a surcharge, a longer lead time, a lower yield with more boards arriving marginal rather than obviously dead, and an assembly you cannot rework by hand. Sometimes that trade is correct, because a fine-pitch BGA leaves no choice. Often it is not. Four layers at 6 mil rules is cheap now and generally beats forcing a two-layer board down to 4 mil traces.
+
+## The practical version
+
+Open the fab's capability page and KiCad's Board Setup side by side, type the numbers in once, and save the result as a project template. Every board after the first one starts out correct.
+
+> Set your design rules from the fab's sheet before the first track, not from the gerber viewer after the last one.

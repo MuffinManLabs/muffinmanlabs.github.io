@@ -1,0 +1,73 @@
+---
+title: "Why I Standardized on KiCad"
+date: "2026-04-20"
+readTime: "5 min read"
+tag: "KiCad"
+excerpt: "Why I deliver native .kicad_pro, .kicad_sch and .kicad_pcb files and refuse Altium conversions: what a conversion silently destroys, and where KiCad is honestly still weaker."
+---
+The question comes up: can the hand-off be in Altium or Eagle? The answer is no, and it is not stubbornness. It is that a converted board is a board nobody can fully trust, including me.
+
+I design in KiCad, natively, and the client receives the native project. Here is the reasoning, including the parts that are not flattering.
+
+## The files are the deliverable, and the client owns them
+
+A KiCad hand-off is a folder: `.kicad_pro`, one `.kicad_sch` per hierarchical sheet, the `.kicad_pcb`, the `.kicad_dru` file holding the custom design rules, project-local symbol and footprint libraries, the `sym-lib-table` and `fp-lib-table` that bind them, and the 3D models. All plain text — S-expressions for the schematic, board, library and rules files, JSON for the project file — which has three consequences that matter commercially.
+
+The client can open every file, today or in five years, on Windows, macOS, or Linux, without buying a seat or renewing a subscription.
+
+`git diff` on a `.kicad_sch` shows what actually changed between revisions. Design review stops being "here is a new zip file" and becomes something a client can inspect line by line.
+
+Nothing depends on my account, my license, or my continued involvement. If the client wants to take the project to another designer next month, they can, and that designer needs nothing exported from me first.
+
+That last point matters most: a design you cannot open without a vendor's permission is not fully yours.
+
+## What actually breaks in a conversion
+
+Importers have gotten good, and that is precisely the problem. The output opens cleanly, looks correct, and quietly drops the parts that carry the engineering intent.
+
+**Custom pad stacks.** Non-standard pad shapes, per-pad soldermask and paste expansion, thermal relief on individual pads. These are the details that make a QFN reflow correctly or keep a high-current terminal solderable, and they are the first things flattened into a generic rectangle.
+
+**Design rules.** Clearance classes, via rules, differential-pair constraints, keepout and rule-area priorities. Rule engines are not interchangeable and there is no lossless mapping between them. What usually survives is a default rule set, and a default rule set on someone else's board is worse than no rules at all, because DRC now passes for the wrong reasons.
+
+**Net classes.** The names often come through. The constraints bound to those names usually do not.
+
+**3D models.** Model references are file paths, and paths break. Even when a model resolves, the per-footprint offset, rotation, and scale that made it sit correctly is often lost, so mechanical fit checks are silently wrong rather than obviously broken.
+
+**Hierarchy and annotation.** Sheet structure, sheet instances, buses, and net labels come across unevenly. A clean five-sheet schematic can arrive as one flat sheet nobody wants to maintain.
+
+The real cost is not any single item. It is that after a conversion you cannot tell which constraints are real. Verifying a converted board rule by rule takes longer than redrawing it, and the client pays either way. So I do not convert. If a project arrives in another format, I quote a native redraw and say so up front.
+
+## KiCad 8 is the floor, not the compromise
+
+KiCad stopped being the budget option around version 6, when the file format was rewritten and stabilized. By version 8 the honest objections had been answered:
+
+- A custom design-rule engine you write as text, so fab-specific and isolation-specific constraints live in the project's `.kicad_dru` rules file instead of inside your head:
+
+```text
+(rule "24v-input-clearance"
+  (condition "A.NetClass == 'PWR_24V'")
+  (constraint clearance (min 0.5mm)))
+```
+
+- A push-and-shove router with length tuning and differential-pair routing.
+- Net-class-driven via and zone rules, rule areas, and a DRC that checks courtyard overlap, silkscreen over pad, and hole-to-hole clearance rather than just copper.
+- STEP export and a 3D viewer good enough to catch enclosure interference before you order.
+- IPC-2581 export alongside Gerber and Excellon for the houses that prefer it.
+
+Versions 9 and 10 sharpened the same edges rather than replacing them, and that stability is itself a feature. A project I lay out this month opens correctly in whatever version the client installs next year.
+
+## Where KiCad is genuinely weaker
+
+Being a specialist means being straight about the boundaries.
+
+**Controlled impedance.** There is no built-in field solver. For a 90 Ω USB differential pair you take the geometry from the fab's stackup calculator and hold it through routing. Correct and workable, but a manual loop that high-end tools automate.
+
+**Constraint management at scale.** The custom rule DSL is powerful, but on a board with dozens of interacting rule sets a text file is harder to audit than a purpose-built constraint manager.
+
+**Signal and power integrity.** The ngspice integration is fine for a small analog block. It is not an SI/PI toolchain, and KiCad does not pretend it is.
+
+**Rigid-flex, exotic stackups, and team-scale library lifecycle management.** No vaults, no approval states, no ERP hooks.
+
+None of those gaps bind on the work I take: 2- and 4-layer boards, ESP32-class digital, USB 2.0 full-speed, I2C, SPI, RS-485, switching regulators from a few hundred kHz into the low MHz. My 24 V I/O controller needed a physically tight buck loop, a real opto-isolation gap with no copper crossing it, and rules that enforced both. KiCad expresses all of it directly. If a project truly needed a field solver and a 16-layer rigid-flex stackup, the right answer would be a different designer, not a different file format.
+
+> One tool, native files, no conversions. The client should end up owning a project, not a translation of one.

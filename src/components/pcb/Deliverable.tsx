@@ -28,7 +28,7 @@ export default function Deliverable() {
   const [active, setActive] = useState<Row | null>(rows.find((r) => r.note) ?? null);
 
   return (
-    <section id="deliverable" className="relative py-24 sm:py-32 px-6">
+    <section id="deliverable" className="relative py-20 sm:py-28 px-6">
       <ScrollFadeIn>
        <div className="max-w-5xl mx-auto">
         <SectionHeading eyebrow="The Deliverable" title="The board isn't the product. The package is.">

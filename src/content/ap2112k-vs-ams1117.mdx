@@ -1,0 +1,68 @@
+---
+title: "AP2112K vs AMS1117: Stop Defaulting to the Wrong LDO"
+date: "2026-04-27"
+readTime: "5 min read"
+tag: "Power"
+excerpt: "The AMS1117 needs 1.1 V of dropout and burns 5 mA doing nothing. The AP2112K-3.3 needs 250 mV and 55 µA. Worked numbers for USB and LiPo boards, plus when to use a buck instead."
+---
+The AMS1117 appears on more hobby boards than any other regulator: cheap, present in every reference design copied forward since the mid-2000s, easy to hand-solder in SOT-223. It is also, for most 3.3 V ESP32-class designs, the wrong part, and the reasons are all on page one of both datasheets.
+
+## Dropout decides whether a battery board works at all
+
+The AMS1117-3.3 specifies roughly 1.1 V of dropout typical at 800 mA, 1.3 V maximum. To hold 3.3 V out it wants about 4.4 V in. The AP2112K-3.3 is rated for 600 mA with roughly 250 mV of dropout at full load, so it holds 3.3 V from about 3.55 V in, and lower still at light loads, because dropout scales with current.
+
+Now put a single LiPo cell in front of each: 4.2 V fully charged, 3.9 to 3.6 V for most of its useful life, done at 3.0 V. The AMS1117 is out of headroom before the battery has done anything. Even at 4.2 V it has 0.9 V of margin, below its own dropout under load. A LiPo-powered AMS1117-3.3 board is broken by inspection, not by measurement.
+
+The AP2112K regulates through the top of that curve, and below roughly 3.55 V it passes the input through minus a small drop instead of collapsing. Since the ESP32-S3 is specified down to 3.0 V, that region is still usable runtime.
+
+## Quiescent current: 5 mA against 55 µA
+
+The AMS1117 draws about 5 mA of ground current typical, 10 mA maximum, whether or not anything downstream is awake. The AP2112K draws about 55 µA and has an enable pin that takes it below a microamp in shutdown. The AMS1117 is a three-terminal part with no enable pin, so you cannot shut it down from a GPIO or an RTC at all.
+
+Put that on a 2000 mAh cell with the board asleep:
+
+```text
+AMS1117:  2000 mAh / 5 mA     = 400 hours     (about 17 days)
+AP2112K:  2000 mAh / 0.055 mA = 36,000 hours  (about 4 years)
+```
+
+An ESP32-S3 in deep sleep sits under 10 µA. Under an AMS1117 the regulator burns several hundred times more current than the thing it powers, so every hour spent tuning sleep intervals is wasted. That one spec disqualifies it from battery work.
+
+## The heat is topology, not part number
+
+Linear regulation dissipates the voltage it throws away:
+
+```text
+P = (Vin - Vout) x Iout
+```
+
+Worked example from my USB-C sensor node: 5.0 V in, 3.3 V out, ESP32-S3 averaging about 150 mA with Wi-Fi active.
+
+```text
+P = (5.0 - 3.3) x 0.150 = 1.7 x 0.150 = 0.255 W
+Efficiency = 3.3 / 5.0 = 66 percent
+```
+
+A third of the input power becomes heat, and that is true of every linear regulator ever built. Changing the part does not change it. What the part changes is the ground current wasted on top: 25 mW for the AMS1117, against 0.3 mW for the AP2112K.
+
+Where the AMS1117 genuinely wins is thermal spreading, purely because SOT-223 is a bigger package. Junction-to-ambient runs roughly 60 to 110 °C/W depending on how much copper the tab is soldered to, so 0.255 W is a 15 to 28 °C rise. A SOT-25 AP2112K sits closer to 200 to 250 °C/W, making the same 0.255 W a 50 to 64 °C rise and putting the junction near 85 °C in a 25 °C room. Within limits, but not a cold part: give it copper on both sides and stitching vias. That is a package property, not a silicon property, and it is the one honest argument for the older part.
+
+## Noise, and what the datasheet does not say
+
+The AP2112K specifies about 55 dB of power supply rejection at 1 kHz and output noise in the tens of microvolts RMS. The AMS1117 specifies ripple rejection at 120 Hz, a mains-frequency number from the era of transformer supplies. Downstream of a buck switching at 500 kHz to 2 MHz its rejection is unspecified. That is not a gap you want under an ADC input.
+
+The capacitors date the parts too. The AP2112K is characterized for ceramics, 1 µF X5R or X7R each side. The AMS1117 datasheet asks for a 22 µF tantalum on the output, meaning its loop assumed some ESR. Ceramics usually work there, but "usually" is outside the characterized region.
+
+## When the answer is a buck instead
+
+Neither LDO fixes a bad voltage ratio. Two triggers push you to a switching regulator: dissipation over roughly half a watt in a small package, or an input far above the output. Run 24 V straight down to 3.3 V linearly at 150 mA and the math is immediate:
+
+```text
+P = (24 - 3.3) x 0.150 = 3.1 W
+```
+
+Nothing in a SOT package survives that. On my 24 V I/O controller the rails go 24 V to 5 V through a buck with a physically tiny switching loop, then 5 V to 3.3 V through an AP2112K. Switching efficiency where the ratio is brutal, LDO quietness where the radio and the ADC live.
+
+Default to the AP2112K-3.3 for anything ESP32-class on USB or a LiPo. Reach for a buck when drop times current clears half a watt, or the input is 12 V or higher. Reach for the AMS1117 when you have 5 V in, a generous copper pour, no battery, no sleep mode, and nothing else in the bin.
+
+> Pick the regulator from three numbers: dropout, quiescent current, and (Vin - Vout) x I. Not from whatever the last reference design used.

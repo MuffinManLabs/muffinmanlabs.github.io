@@ -1,0 +1,73 @@
+---
+title: "Footprint Libraries That Don’t Rot"
+date: "2026-06-08"
+readTime: "5 min read"
+tag: "KiCad"
+excerpt: "Ship a KiCad project a client can still edit in five years: project-local libraries, land patterns verified against the datasheet, and a checklist for third-party footprints."
+---
+Gerbers are a snapshot. The KiCad project is what a client opens two years later when they want one connector moved and a sensor swapped. If the libraries it depends on live on my machine, in a folder I have since reorganized, what I handed over is a fossil: viewable, not editable. Library hygiene is not housekeeping, it is part of the deliverable.
+
+## What actually rots, and what does not
+
+Modern KiCad is better than its reputation here, so be precise about what breaks.
+
+- The schematic file embeds the symbols it uses. It opens and renders correctly on a machine that has never seen my libraries.
+- The board file contains complete footprint definitions for everything placed on it. It opens, renders and fabricates too.
+- 3D model paths are references, not content, unless you turn on KiCad 9's embed-files option. Left as plain references they break the moment a folder moves.
+- The library tables are references. Every "update footprints from library", every new part from the same family, every symbol edit needs the real library present, and that is what a revision job consists of.
+
+So the project does not die, it quietly becomes read-only: the client can reorder the board but cannot safely change it.
+
+## Everything the project needs lives in the project folder
+
+```text
+mml-02-wled-matrix/
+  mml-02.kicad_pro
+  mml-02.kicad_sch
+  mml-02.kicad_pcb
+  sym-lib-table
+  fp-lib-table
+  lib/
+    mml-02.kicad_sym
+    mml-02.pretty/
+    3dmodels/
+  docs/
+  fab/
+```
+
+The two library tables sit next to the project file, and their paths use KiCad's project-directory path variable rather than an absolute path. An entry pointing at C:/Users/me/kicad-libs is a time bomb that works on exactly one computer.
+
+Anything pulled from a manufacturer, SnapEDA or a component search site gets copied into the project library once it has been checked. It never stays as a link to a global "downloads" library, because that library will not exist on the client's machine and will have changed on mine.
+
+The README states the KiCad version the project was saved with. KiCad files only move forward: a project saved in 9 will not open in 8.
+
+## Verify against the land pattern, not the picture
+
+A downloaded footprint is a claim, not a fact. Check it against the recommended land pattern drawing in the datasheet, which is a different drawing from the package outline. The outline describes the plastic; the land pattern describes the copper. Three measurements catch most problems: pad pitch, pad size and overall span. Use the measure tool on two real pads instead of trusting the file name.
+
+Then check the symbol, because that is where the subtler failures hide. The footprint is only geometry; pin numbering lives in the symbol, and two parts can share a package with completely different pinouts. AP2112K-3.3, MCP73831 and a long list of small regulators and charge controllers all share SOT-23-5, and none of them agree on what pin 1 does — it is VIN on the AP2112K and STAT on the MCP73831. A generic package footprint is fine. A generic pin mapping is a scrapped board.
+
+Naming follows the same split: footprints named for the land pattern, like R_0603_1608Metric or LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm, symbols named for the part and carrying the manufacturer part number plus the LCSC number in fields. That LCSC field is what makes a JLCPCB assembly BOM machine-readable.
+
+## Courtyard, fabrication and silkscreen do three different jobs
+
+- F.Courtyard is a keep-out that DRC checks for overlap: pads and body plus the room the solder fillet and placement tolerance need, commonly around 0.25 mm beyond the extents and tighter for chip passives. No courtyard means DRC cannot warn you that two parts collide.
+- F.Fab is the true body outline plus a pin 1 marker and the reference designator. It feeds assembly drawings and mechanical checks, so it is nominal body size, not the courtyard.
+- F.Silkscreen is ink that gets printed. It must not sit on a solder mask opening, because silk on a pad interferes with wetting and the fab may clip it without telling you. JLCPCB wants at least 0.15 mm line width and 1 mm text height, and polarity marks have to stay visible after placement: a pin 1 dot hidden under the body is decoration.
+
+## 3D models are a mechanical check
+
+STEP for mechanical work, WRL for rendering. The point is not the picture: it is catching the USB-C receptacle that overhangs the board edge by 0.4 mm, the screw terminal whose wire entry faces an enclosure wall, the electrolytic taller than the lid. Models ship in the project folder with relative paths, and I check the model origin lands where the footprint origin does, because a mis-anchored model looks perfect in 2D and lies in the assembly.
+
+## The checklist I run on any third-party footprint
+
+- Pitch, pad size and overall span match the datasheet's recommended land pattern.
+- Pin 1 location and numbering direction match the datasheet and the symbol.
+- Symbol pin functions checked against the datasheet pin table, not the package name.
+- Courtyard exists, on F.Courtyard, with sensible clearance.
+- Silkscreen clear of every mask opening, 0.15 mm minimum width.
+- Paste sane: a large thermal pad needs a windowpane of apertures at roughly 50 to 70 percent coverage, not one giant one, or the part floats.
+- Footprint attributes correct: the pick-and-place file comes straight from them.
+- 3D model attached, rotated correctly, origin aligned, and the whole thing saved into the project library rather than linked from elsewhere.
+
+> Ship the libraries with the project, or you have shipped a board the client can reorder but never change.

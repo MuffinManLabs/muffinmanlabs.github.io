@@ -1,0 +1,55 @@
+---
+title: "USB-C Won’t Enumerate: The 5.1k Story"
+date: "2026-05-25"
+readTime: "5 min read"
+tag: "Power"
+excerpt: "A Type-C source never turns on VBUS until it sees 5.1k on CC. Why the pull-down goes on both CC1 and CC2, and why one shared resistor fails only with good cables."
+---
+A USB-C board with no sign of life at all, no 3.3V, no enumeration, not even a power LED, is usually not a firmware problem or a dead regulator. It is a port that never got switched on. A USB-C source does not put 5V on VBUS the way an old USB-A port did. VBUS starts off and stays off until the source detects a sink on the CC pins. If your board never announces itself, the host is doing exactly what the spec tells it to do: nothing.
+
+## Rd is the entire handshake
+
+A sink announces itself with a pull-down resistor, Rd, of 5.1k to ground. It goes on CC1 and on CC2. Two resistors, one per pin.
+
+The source has its own pull-ups on its CC pins, Rp, either resistors to a 3.3V or 5V rail or precision current sources. When you plug in, your 5.1k and its pull-up form a divider, and the source watches for that voltage to appear. The same divider tells your board how much current is being offered:
+
+- around 0.4V: default USB current, 500 mA on a USB 2.0 port
+- around 0.9V: 1.5A at 5V
+- around 1.7V: 3.0A at 5V
+
+Only after it sees a valid Rd does the source close its VBUS switch. That is why this failure is so complete. The board is not misbehaving, it was never powered.
+
+## Why one resistor works half the time
+
+A Type-C to Type-C cable does not carry both CC wires end to end. It carries one. The other position in the plug becomes VCONN, which the source uses to power the e-marker chip inside cables that have one.
+
+Which of your two CC pins is actually in circuit therefore depends on which way the plug went in. Fit a single 5.1k on CC1 only and the board works in one orientation and is stone dead in the other. Users report this as "it only works if I flip the cable," and it can survive weeks of bench testing, because the first time you plug in you have a coin-flip chance of everything looking fine.
+
+## The bridge that kills good cables
+
+The other version of this bug is one 5.1k shared between the two pins, either a resistor bridging CC1 to CC2 or the two pins tied together and taken to ground through a single part.
+
+Now CC and VCONN are shorted together. With a cheap cable that has no e-marker, nothing happens, because the source never energizes VCONN, and the board appears to work. Plug in a proper 5A e-marked cable and the source drives 5V onto VCONN, which now lands directly on the CC line it is trying to read. The source sees an impedance that means nothing to it and either refuses to attach or drops the connection seconds later. "Works with the cheap cable, dead with the good one" is the signature.
+
+Two resistors. Both to ground. It costs a cent.
+
+## The rest of the port
+
+On MML-01 the port is a sink only, 5V default, no PD controller. The remaining parts each have exactly one job.
+
+- A polyfuse in series with VBUS, picked so its hold current sits above the board's true peak, which for that design means ESP32-S3 Wi-Fi transmit spikes plus the MCP73831 charging at full rate, and its trip current sits below what a host is willing to deliver. The hold current derates with ambient temperature, and the fuse's own resistance shows up as a permanent drop on VBUS.
+- A USBLC6-2SC6 at the connector for ESD. It is a flow-through part in SOT-23-6: each data line enters on one pin and leaves on the pin directly opposite, so D+ and D- pass through it with no stubs. Put it within a few millimeters of the receptacle. Protection placed after 20 mm of trace has already let the transient into your board.
+- D+ and D- routed as a loose differential pair. On a two-layer 1.6 mm board you cannot realistically hit 90 ohms differential, so do not pretend to. Keep the pair short, side by side at constant spacing, over unbroken ground pour, roughly length matched, and free of vias. The ESP32-S3 USB peripheral is full speed at 12 Mbit/s, and at those edge rates a short tidy uncontrolled pair is genuinely fine. High-speed USB at 480 Mbit/s is what punishes sloppy geometry, and that is not what this part does.
+
+Worth saying plainly: CC1 and CC2 are exposed pins on a connector a human will touch. If you add ESD protection there, use a low-capacitance part, because USB PD's signaling rides on that line.
+
+## What I check before a USB-C board goes out
+
+- Two 5.1k resistors, one on CC1, one on CC2, each to GND, no shared node.
+- Layout agrees with the schematic. The netlist is often right while one resistor pad ends up unconnected in the pour.
+- ESD device within a few millimeters of the connector, data lines flowing through it rather than stubbed off it.
+- Shell and mounting tabs grounded deliberately, not left floating because the footprint had no net.
+- Polyfuse rated against real peak current, not average.
+- VBUS and GND sized for charger current plus load current, not just for the logic.
+
+> If a USB-C board is completely dead, check the two 5.1k pull-downs before you touch the firmware.

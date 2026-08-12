@@ -1,0 +1,64 @@
+---
+title: "The Firmware Constraints Behind the Layout"
+date: "2026-08-10"
+readTime: "4 min read"
+tag: "Firmware"
+excerpt: "Bulk caps sized for Wi-Fi current spikes, strapping pins left free, and a flashing path you can still reach: layout choices that only make sense if you have read the firmware."
+---
+A reviewer who has never read the firmware will happily approve a board that cannot be flashed, browns out the moment Wi-Fi associates, and reads noise on its analog input. All three of those are layout and BOM decisions, and all three only make sense once you know what the code does at runtime.
+
+Here are the ones that come up on every ESP32 board I design.
+
+## Bulk capacitance is a firmware requirement in disguise
+
+An ESP32-S3 idles at tens of milliamps and then transmits. Wi-Fi TX bursts pull several hundred milliamps for a few hundred microseconds, and Espressif's guidance is that the module 3V3 pin be able to supply at least 500 mA. No LDO responds on that timescale. The energy for the burst either comes out of local capacitance or it comes out of the rail voltage, and when the rail sags past the brownout threshold, the brownout detector resets the chip.
+
+The symptom is a reboot loop that appears only after the device joins a network. It reads as a firmware bug. It is a capacitor placement problem.
+
+What that means on the board: a 22 uF bulk plus a 100 nF within a few millimeters of the module 3V3 pin, connected with short wide copper and its own via straight down to the ground plane. Another 10 to 22 uF at the AP2112K-3.3 output, and more bulk at the regulator input.
+
+And specify the capacitors properly. MLCC capacitance collapses under DC bias, so a 10 uF 0402 rated 6.3 V can lose most of its value at 3.3 V while measuring perfectly at zero volts. Put case size, dielectric and voltage rating in the BOM, not just the number of microfarads.
+
+## Strapping pins decide whether the board boots at all
+
+The ESP32-S3 latches GPIO0, GPIO3, GPIO45 and GPIO46 at reset. GPIO45 and GPIO46 have internal pull-downs and expect to stay low, and GPIO46 is input-only. Hang an LED to 3V3, an external pull-up, or another chip's push-pull output on one of those and you have changed the boot mode in copper, permanently.
+
+On a WROOM-1 module there is a second trap: the module's own flash and PSRAM consume GPIO26 through GPIO32, and on octal-PSRAM variants such as N8R8 and N16R8 they also take GPIO33 through GPIO37. The footprint exposes some of those pins, which does not make them available.
+
+So before assigning any pin in the schematic, three checks. Is it a strapping pin. Is it consumed by the module's memory. Does the peripheral I want actually exist on it, given that native USB is fixed at GPIO19 and GPIO20. A momentary button on GPIO0 is fine because the line idles high. A sensor interrupt output that idles low is not.
+
+## Leave yourself a way back in
+
+MML-01 has real BOOT and RESET buttons even though the chip has native USB, because native USB is not a guarantee. The USB Serial/JTAG peripheral lives inside the chip, and firmware that crashes early, reconfigures GPIO19 and GPIO20, or drops into deep sleep on boot can take your only interface with it. If you can hold GPIO0 low and toggle EN, you always get back to the ROM bootloader.
+
+Bring UART0 out as well, GPIO43 for TX and GPIO44 for RX, plus ground. Three pads cost nothing and are the difference between recovering a board and reworking it.
+
+If you use a USB-UART bridge instead of native USB, the DTR/RTS auto-reset transistor pair is not optional. Leave it off and every single flash becomes a two-handed button routine for whoever inherits the board.
+
+## Analog inputs are only as good as the network in front of them
+
+On ESP32 parts, ADC2 is unavailable while Wi-Fi is running. That single line in the driver documentation is a routing constraint: any analog input has to land on an ADC1 channel, GPIO1 through GPIO10 on the S3.
+
+Filter at the pin with a series resistor and a capacitor to ground, and keep the resistor small so the capacitor, not the resistor, supplies the charge the SAR converter draws when it samples. 1k and 100 nF gives a corner around 1.6 kHz from 1 / (2 pi R C), which is generous for a temperature or current reading sampled once a second.
+
+Then match the divider to the converter's usable window rather than to 0 to 3.3 V. The ADC is non-linear near both extremes, so put the working signal in the linear middle and let the firmware apply the calibration curve. Protection matters for the same reason: the code will keep sampling whatever is on that wire, so a series resistor and clamping to the rails belong there regardless of what the sensor is supposed to produce.
+
+## Pick parts the firmware already knows
+
+MML-01 uses a BME280 because ESPHome has a first-class component for it. MML-02 uses WS2812B because WLED does. MML-03 speaks Modbus over RS-485 because Tasmota does. A sensor with no existing driver turns a two-line configuration entry into a custom component that somebody has to write, test and maintain, and that somebody is being paid by the client.
+
+```yaml
+sensor:
+  - platform: bme280_i2c
+    address: 0x76
+    temperature:
+      name: Ambient Temperature
+```
+
+Addressing is the same story. The BME280 has exactly two I2C addresses, 0x76 and 0x77, so a third one on the same bus needs a multiplexer such as a TCA9548A. That is a part, a footprint, a decoupling cap and more routing, and it only shows up in the schematic if you thought about the code before you thought about the layout.
+
+## The practical takeaway
+
+Read the datasheet and read the firmware. The datasheet tells you what the silicon can do; the firmware tells you what it will actually be doing at three in the morning on a client's bench, which is what the copper has to survive.
+
+> Half the decisions on a good ESP32 layout are invisible until you know what the code does.

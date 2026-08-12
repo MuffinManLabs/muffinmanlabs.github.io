@@ -1,0 +1,54 @@
+---
+title: "Ground Planes: The Return Path Nobody Draws"
+date: "2026-05-04"
+readTime: "5 min read"
+tag: "Layout"
+excerpt: "Return current flows directly under the trace, not wherever it likes. What a slot in the pour really does, and how MML-03 keeps logic ground and field ground apart."
+---
+Every schematic has forty ground symbols on it and not one of them tells you where the current actually goes. That is the whole problem. A ground symbol is a promise that return current gets home; the copper you draw decides whether it takes a short path or a long one.
+
+Current flows in loops. If 100 mA leaves a regulator and reaches an ESP32-S3, 100 mA has to come back. The outbound path is the one you drew and named. The return path is whatever the pour gives it, and that is where the trouble hides.
+
+## Low frequency spreads out, high frequency hugs the trace
+
+At DC and low frequencies, return current takes the path of least resistance: in a solid pour it fans out and uses the widest copper available.
+
+Above roughly 10 to 100 kHz, inductance dominates resistance and the rule changes. Current takes the path of least impedance, and the lowest-impedance path is the one enclosing the smallest loop area. In a plane beneath a trace, that path sits directly under the trace, in a band roughly three times the dielectric thickness wide on each side of it. The spread is set by how far the trace sits above the plane, not by how wide the trace is — on a 2-layer board with a 1.5 mm core that band is millimetres wide even for a thin track. Nobody routes it; physics minimizes loop inductance for you.
+
+That is good news: an uninterrupted pour under your signals gives every net a tight return for free. It also means a plane is not a magic equipotential blob. It is a set of narrow, invisible return traces, and you can break one as easily as a routed track.
+
+## A slot in the plane is a detour
+
+Cut a slot through the pour and the return current can no longer follow the signal. It has to run along the slot, around the end, and back. Slots are rarely deliberate: a row of through-hole connector pads, a long keepout, or a bottom-layer trace on a two-layer board.
+
+Two things happen. The loop area between signal and return explodes, and loop area is what radiates: that loop becomes a small antenna, transmitting your switching edges and receiving whatever the room transmits. Loop inductance also rises, so every fast edge develops a voltage across the return path. The ground at one end of the slot is no longer the ground at the other end.
+
+The fix is almost always the same. Do not route across the gap. Move the trace so its return can stay underneath it. On a two-layer board, treat every bottom-layer route as a slot you are cutting in your own ground plane: keep them short, keep them few, and inspect the finished pour for islands and thin necks.
+
+## Star ground and solid pour solve different problems
+
+Star grounding is a low-frequency, high-current idea. A large noisy return current must not share copper with a small sensitive one, because the IR drop along shared copper appears as an offset in the sensitive circuit. So each domain gets its own return, and they join at exactly one point.
+
+A solid pour is a high-frequency idea. It says give every fast edge the tightest possible return loop and never interrupt it.
+
+The two only conflict when you apply the wrong one. Star grounding a fast digital bus is how you build an antenna. Pouring one uninterrupted plane under a switching regulator and a precision measurement is how you get noise in your readings. Ask what current flows, and how fast it changes.
+
+## How MML-03 splits its grounds
+
+MML-03 is a 24 V I/O controller: 24 V in, a buck to 5 V, an AP2112K to 3.3 V, an ESP32-S3, and PC817 opto-isolated outputs.
+
+The 24 V input return and the logic return are the same net, but not the same copper path. The buck's hot loop — input capacitor, switch, low-side return — gets its own tight pour, which meets the logic pour at a single point at the input capacitor ground pad. The switching return current has no reason to travel under the microcontroller, so it does not.
+
+The field side of the optocouplers is a genuinely separate net. There is a real gap under the PC817 bodies with no copper crossing it on any layer: no pour, no trace, no stitching via, and no silkscreen-only gap that merely looks isolated. Tie field ground to logic ground anywhere and you have paid for four optocouplers and thrown the isolation away. Where the field side needs a defined reference, that is one deliberate component across the barrier, never a pour that happens to touch.
+
+## Stitching vias
+
+A pour is only a plane where it is actually connected. Stitch pours together along the board edge and across open areas so no region is fed through a single narrow neck.
+
+The vias that matter most sit next to signal vias. When a trace changes layers, its return has to change reference planes too, and the only route available is a nearby ground via. For fast edges, keep a ground via within a couple of millimeters of the signal via. Without it the return current finds its own way around, and you are back to the slot problem.
+
+## The practical version
+
+Before you route, pour ground, look at the shape, and ask where the return current for each fast net will physically flow. After you route, hide every layer except the ground pour and look at it as a picture. Islands, peninsulas and long thin necks are the bugs.
+
+> Ground is not a net. It is a set of return paths you drew without noticing.

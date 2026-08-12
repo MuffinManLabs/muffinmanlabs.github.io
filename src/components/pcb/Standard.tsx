@@ -4,10 +4,10 @@ import { PCB, STANDARD_PILLARS, STANDARD_STATS } from "./pcbData";
 
 export default function Standard() {
   return (
-    <section id="standard" className="relative py-24 sm:py-32 px-6">
+    <section id="standard" className="relative py-20 sm:py-28 px-6">
       <ScrollFadeIn>
         <div className="max-w-5xl mx-auto">
-          <SectionHeading eyebrow="The Standard" title="Built to a standard. Delivered on schedule." gold>
+          <SectionHeading eyebrow="The Standard" title="Built to a standard. Delivered on schedule.">
             The difference between a hobbyist and a professional isn&apos;t the board — it&apos;s
             everything that arrives with it.
           </SectionHeading>
@@ -20,15 +20,14 @@ export default function Standard() {
             {STANDARD_STATS.map((s, i) => (
               <div
                 key={s.label}
-                className="px-4 py-7 text-center"
-                style={{
-                  borderLeft: i % 2 !== 0 ? "1px solid rgba(184,115,51,0.2)" : undefined,
-                  borderTop: i >= 2 ? "1px solid rgba(184,115,51,0.2)" : undefined,
-                }}
+                /* dividers must follow the grid: 2 columns on mobile, 4 from md up */
+                className={`px-4 py-7 text-center border-[rgba(184,115,51,0.2)] ${
+                  i % 2 !== 0 ? "border-l" : ""
+                } ${i >= 2 ? "border-t" : ""} md:border-t-0 ${i !== 0 ? "md:border-l" : ""}`}
               >
                 <div
-                  className="text-5xl sm:text-6xl font-bold leading-none gold-text"
-                  style={{ fontFamily: "var(--font-fraunces), serif" }}
+                  className="text-5xl sm:text-6xl font-bold leading-none gold-text tabular-nums"
+                  style={{ fontFamily: "var(--font-fraunces), serif", fontVariantNumeric: "lining-nums tabular-nums" }}
                 >
                   {s.value}
                 </div>

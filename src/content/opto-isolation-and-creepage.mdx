@@ -1,0 +1,65 @@
+---
+title: "Opto-Isolation and the Gap You Must Not Cross"
+date: "2026-08-03"
+readTime: "4 min read"
+tag: "Signals"
+excerpt: "An optocoupler only isolates if the layout does too: no copper on any layer crossing the barrier, a slot to extend creepage, and an LED resistor sized for worst-case CTR."
+---
+An optocoupler is rated for thousands of volts across its package, and it is trivially easy to throw that rating away with a ground pour that runs underneath it. Isolation is not a part you place. It is a distance you draw, defend on every layer, and then verify.
+
+On MML-03 the outputs are PC817 optocouplers driving a 24 V field side. That board is where all of the following actually gets decided.
+
+## Creepage and clearance are two different distances
+
+Clearance is the shortest path through air between two conductors. Creepage is the shortest path along the surface of the insulating material between them. They are measured differently and they usually give different numbers for the same layout.
+
+Creepage is the one that catches people out, because it degrades over time. Dust, humidity and contamination let current track along a surface at voltages that air would never break down at. The required values come from IEC 60664-1 and IEC 62368-1: creepage as a function of working voltage, pollution degree and material group, clearance as a function of the impulse withstand voltage that the overvoltage category sets. They are looked up, not invented.
+
+One detail worth knowing: solder mask is generally not credited as insulation for creepage. Treat the bare surface distance as the real number, no matter how green the board looks.
+
+## The barrier is a line you draw, not a part you buy
+
+Decide where the barrier runs before you route anything, then hold it absolutely:
+
+- No tracks, no vias, no pads, no zone fill, no thermal relief crossing the line.
+- No inner-layer plane crossing it either. On 2 layers you can see the violation. On 4 layers, a ground plane on the inner layer is the thing that quietly bridges both sides while the outer layers look perfect.
+- Two separate ground nets that never touch. GND and FIELD_GND, no net tie, no zero-ohm link "for now", no shared mounting-hole ring stitching them together through the enclosure.
+
+In KiCad, draw a Rule Area over the barrier region with tracks, vias, pads and zone fill all disallowed, applied to every copper layer. Then add a custom DRC rule setting a minimum clearance between the two ground net classes, so the checker enforces the gap you intended rather than the default.
+
+## A slot buys distance you cannot otherwise get
+
+The PC817 is a 4-pin DIP with 0.3 inch, 7.62 mm, between pin rows. Subtract pad copper and you have roughly 6 mm of surface path under the body, which is all the creepage the part's own footprint gives you.
+
+Milling a slot through the board under the package removes that surface entirely. The creepage path now has to travel around the ends of the slot, which can easily double it, and most fabs will cut one at no extra charge — check the minimum slot width first, typically around 1 mm. Keep the slot clear of neighbouring courtyards and of any mounting hardware, and remember that it also removes mechanical support, so do not put it where the board will flex.
+
+## Sizing the LED resistor so the output still works in five years
+
+Current transfer ratio is CTR = Ic / If, and the PC817 is sold in bins: A is 80-160%, B is 130-260%, C is 200-400%, D is 300-600%, ungraded parts span 50-600%. Design against the low end of the bin you actually buy, then derate again, because LED output falls with age and with temperature. A factor of 0.5 over life is a common conservative choice.
+
+Worked example, driving a 24 V PLC input that sinks about 5 mA:
+
+```text
+Required Ic         5 mA
+Worst-case CTR (A)  80 %   -> If = 5 / 0.80  = 6.3 mA
+Aging derate        x0.5   -> If = 12.5 mA
+Chosen drive        15 mA
+LED Vf, max         1.4 V
+R = (3.3 - 1.4) / 0.015 = 127 ohm  ->  120 ohm standard value
+```
+
+Then check the two limits people skip. An ESP32-S3 pad is not an LED driver: 15 mA is within its capability but not far from it, so if you want margin, buffer the LED with a small MOSFET rather than sourcing it from the GPIO. And the PC817 output transistor is rated 35 V Vceo and 50 mA Ic, which is fine for a PLC input or for driving a MOSFET gate, and nowhere near enough to energize a relay coil directly.
+
+Speed matters too. PC817 switching times are in the microseconds, so it is an on/off and slow-PWM device. It is not a data isolator. RS-485 gets a proper transceiver, and if that link needs isolating, it needs an isolated transceiver plus an isolated supply.
+
+## Say what the board actually claims
+
+MML-03 runs at 24 V SELV. At that working voltage the standards do not demand large creepage at all, so the barrier there is doing a different job: breaking ground loops, keeping field-side transients out of the MCU ground, and demonstrating the technique done correctly.
+
+So I describe it as industrial-style, not safety certified. No mains, no reinforced insulation claim, no specified material group, no agency testing. If an application does involve mains, that is a different project with certified isolation components, a defined pollution degree, a qualified stack-up and real testing. Stating which one a client is getting is part of the deliverable.
+
+## The practical takeaway
+
+Draw the isolation line first, add it as a keepout on every layer including the planes, keep the two grounds as genuinely separate nets, slot under the optocoupler if you need the distance, and size the LED resistor from the worst-case CTR bin with an aging derate.
+
+> An optocoupler is a component; isolation is a layout decision, and the ground pour is what usually undoes it.

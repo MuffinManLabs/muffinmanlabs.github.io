@@ -29,7 +29,23 @@ export const STATUS_OK = "DRC: 0 · ERC: 0";
 export const STATUS_SPECS = "KICAD 10 · 2-LAYER · 1.6mm FR-4 · ENIG · JLCPCB";
 export const POWER_STATUS = "> board powered :: rails nominal :: DRC clean / ERC clean";
 export const DESIGNATOR =
-  "KICAD PCB DESIGN SPECIALIST · 5+ YEARS · JLCPCB PRODUCTION-READY";
+  "KICAD PCB DESIGN SPECIALIST · ESP32 BOARDS · JLCPCB PRODUCTION-READY";
+
+/* ════════════════════════════════════════════════════════════════════════
+   ABOUT — the person behind the service
+   ════════════════════════════════════════════════════════════════════════ */
+export const ABOUT_PARAGRAPHS: string[] = [
+  "I'm the person who will actually design your board — not an agency front desk, not a rotating team. You talk to the designer, and the designer does the work.",
+  "I specialize narrowly on purpose: KiCad, and boards built around modules like the ESP32-S3. Depth in one toolchain beats shallow coverage of five. It's why my hand-offs are native files you own outright, and why my design rules come from your fab's real capability sheet before I route a single trace.",
+  "Every project ends the same way — a complete manufacturing package, documented like a datasheet and organized so the next engineer can pick it up cold. If the delivered work doesn't meet the scope we agreed, you get your money back.",
+];
+
+export const ABOUT_CREDENTIALS: { label: string; detail: string }[] = [
+  { label: "KiCad 8–10, native", detail: "no Altium, no lossy conversions" },
+  { label: "JLCPCB / PCBWay ready", detail: "rules set from the capability sheet" },
+  { label: "Documented hand-offs", detail: "README, REV notes, Git history" },
+  { label: "Money-back guarantee", detail: "written into every contract" },
+];
 export const KICAD_NATIVE =
   "native .kicad_pro / .kicad_sch / .kicad_pcb — KiCad 8–10, no Altium, no conversions";
 
@@ -345,8 +361,8 @@ export type Pillar = { num: string; title: string; body: string };
 export const STANDARD_PILLARS: Pillar[] = [
   {
     num: "01",
-    title: "Five years in the PCB industry",
-    body: "Boards designed for production, not for the bench drawer. Schematics, layouts, and hand-offs that have been through real fabs, real assembly lines, and real design reviews.",
+    title: "Built for production, not the bench drawer",
+    body: "Every layout is routed against the fab's real capability sheet, checked in the 3D viewer for mechanical fit, and shipped DRC- and ERC-clean with the proof included. The goal is a board that works the first time — not one that merely passes.",
   },
   {
     num: "02",
@@ -366,7 +382,7 @@ export const STANDARD_PILLARS: Pillar[] = [
 ];
 
 export const STANDARD_STATS: { value: string; label: string }[] = [
-  { value: "5+", label: "years in the PCB industry" },
+  { value: "0", label: "DRC + ERC errors shipped" },
   { value: "10", label: "KiCad — native, versions 8–10" },
   { value: "24h", label: "fixed-quote turnaround" },
   { value: "100%", label: "money-back guarantee" },

@@ -4,7 +4,7 @@ import { PCB, SERVICES, TRUST } from "./pcbData";
 
 export default function Services() {
   return (
-    <section id="services" className="relative py-16 sm:py-20 px-6">
+    <section id="services" className="relative py-20 sm:py-28 px-6">
       <ScrollFadeIn>
         <div className="max-w-5xl mx-auto">
           <SectionHeading eyebrow="Services" title="Three ways I can help.">

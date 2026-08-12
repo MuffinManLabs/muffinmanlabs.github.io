@@ -13,8 +13,10 @@ const SECTIONS = [
   { id: "board", label: "Board" },
   { id: "services", label: "Services" },
   { id: "boards", label: "Portfolio" },
+  { id: "about", label: "About" },
   { id: "deliverable", label: "The Package" },
   { id: "skills", label: "Skills" },
+  { id: "notes", label: "Field Notes" },
   { id: "standard", label: "The Standard" },
   { id: "contact", label: "Contact" },
 ];
