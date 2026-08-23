@@ -29,7 +29,7 @@ Before you place the symbol, check three things.
 
 ## Basic vs extended parts, and what that costs
 
-JLCPCB splits its library into basic parts, already loaded on the machines, and extended parts, which get pulled from the shelf and loaded for your job. Most unique extended parts add a feeder setup fee, charged per part type rather than per placement. JLCPCB's preferred-extended tier is the exception, and the fee schedule changes, so confirm it at quote time. Ten extended resistor values cost ten setups even if each is placed once. Ten extended resistor values cost ten setups even if each is placed once.
+JLCPCB splits its library into basic parts, already loaded on the machines, and extended parts, which get pulled from the shelf and loaded for your job. Most unique extended parts add a feeder setup fee, charged per part type rather than per placement. JLCPCB's preferred-extended tier is the exception, and the fee schedule changes, so confirm it at quote time. Ten extended resistor values cost ten setups even if each is placed once.
 
 So spend the extended budget where it buys something. If a part like the ESP32-S3 module, the AP2112K-3.3 or the USBLC6-2SC6 does land in the extended tier, it earns its setup fee. Generic passives do not. Walk the BOM and ask of every extended passive whether a basic-library value gets the same result. It usually does, because you rarely need a 4.75k when 4.7k works.
 
@@ -50,7 +50,7 @@ The pick-and-place file lists a designator, X, Y, rotation and layer for every p
 
 One rule prevents nearly all of this: regenerate the BOM and the position file together, from the same board file, at the same moment, every time. Re-annotate the schematic after exporting and both files are stale.
 
-Do-not-populate needs an explicit convention, because a blank cell invites a guess. Keep the footprint, keep the designator, mark it DNP in the schematic, exclude it from both the BOM and the position file, then list it by designator in the assembly notes as intentionally unpopulated. On MML-02 the snubber and MOV footprints across the relay contacts are exactly that: the copper is there, the parts are a per-deployment build option, and one line in the notes means nobody has to ask.
+Do-not-populate needs an explicit convention, because a blank cell invites a guess. Keep the footprint, keep the designator, mark it DNP in the schematic, exclude it from both the BOM and the position file, then list it by designator in the assembly notes as intentionally unpopulated. On PCB 2 the snubber and MOV footprints across the relay contacts are exactly that: the copper is there, the parts are a per-deployment build option, and one line in the notes means nobody has to ask.
 
 ## The check before you send
 

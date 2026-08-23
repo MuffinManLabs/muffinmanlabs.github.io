@@ -3,18 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { PostMeta } from "@/lib/posts";
-
-function formatDate(iso: string) {
-  if (!iso) return "";
-  const d = new Date(`${iso}T00:00:00Z`);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
+import { formatDate } from "@/lib/dates";
 
 /* A list, not a gallery. Every row is title, one line, and where to find it. */
 export default function BlogIndex({

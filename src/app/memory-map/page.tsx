@@ -1,10 +1,31 @@
 import MemoryMapExplorer from "@/components/stm32f407_memory_map";
 
+const TITLE = "STM32F407 Memory Map Explorer | MuffinByteLabs";
+const DESCRIPTION =
+  "An interactive explorer for the STM32F407VGT6 memory map — the full 4 GB Cortex-M4 address space as one expandable tree, with peripheral registers, clock-enable bits, and address, bit-band and baud-rate calculators.";
+
+/* openGraph/twitter in full — Next does not merge them field-by-field with
+   the layout, so omitting them here shares this page as the homepage's card
+   with the homepage's URL. */
 export const metadata = {
-  title: "STM32F407 Memory Map Explorer | MuffinByteLabs",
-  description:
-    "An interactive explorer for the STM32F407VGT6 memory map — the full 4 GB Cortex-M4 address space as one expandable tree, with peripheral registers, clock-enable bits, and address, bit-band and baud-rate calculators.",
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: "/memory-map" },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: "/memory-map",
+    siteName: "Ray Malik · MuffinByteLabs",
+    type: "website",
+    locale: "en_US",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "MuffinByteLabs — KiCad PCB design" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/og.png"],
+  },
 };
 
 /* What the tool actually does, listed so a visitor knows before they click. */

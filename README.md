@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# muffinbytelabs.com
 
-## Getting Started
+Portfolio and bidding site for **MuffinByteLabs** — Ray Malik, freelance PCB design engineer working in native KiCad.
 
-First, run the development server. :
+The site makes one argument: every claim on it is checkable. The boards link to the full open-source KiCad project ([MuffinByteLabs/esp32s3-plant-monitor](https://github.com/MuffinByteLabs/esp32s3-plant-monitor)), including the exact manufacturing package that was uploaded to the fab and the design reviews that preceded it.
+
+## Stack
+
+- [Next.js](https://nextjs.org) static export (`output: "export"`) — no server, no third-party requests, no cookies
+- Tailwind CSS v4, one design-token palette in `src/app/globals.css` (dark only, warm graphite + ENIG gold)
+- MDX for the Field Notes blog (`src/content/*.mdx`, frontmatter drives the index, RSS at `/feed.xml`)
+- Deployed to GitHub Pages by `.github/workflows/deploy.yml` on every push to `main`
+
+## Working on it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
+npm run dev     # local dev server
+npm run build   # static export into out/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Site content — boards, services, capability, repo links — lives in one file: `src/components/pcb/pcbData.ts`. Sections that were cut from the homepage keep their data there so restoring one is a render change, not a rewrite.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Script | Purpose |
+|---|---|
+| `scripts/gen-board-layout.py` | Generates the interactive 2D board art from the real KiCad board file |
+| `scripts/export-board-3d.sh` | Exports and compresses the rotatable 3D board model (glTF + Draco) |
+| `scripts/gen-og-image.cjs` | Renders the site's social-share card to `public/og.png` |
+| `scripts/gen-post-og.cjs` | Renders one share card per Field Note into `public/og/` — run after adding a post |

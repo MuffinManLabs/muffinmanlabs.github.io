@@ -206,7 +206,7 @@ const OP_DRILL = { opacity: "var(--l-drill)" };
 const OP_BOTH = { opacity: "var(--l-both)" };
 
 /* ── geometry merging ──────────────────────────────────────────────────────
-   MML-01 alone is 415 routed segments and 157 vias. Drawn one element each,
+   PCB 1 alone is 415 routed segments and 157 vias. Drawn one element each,
    that is ~890 SVG nodes for something the browser can rasterise from a
    dozen, so segments sharing a stroke are concatenated into a single <path>
    and every via ring of the same size becomes one more. The geometry is

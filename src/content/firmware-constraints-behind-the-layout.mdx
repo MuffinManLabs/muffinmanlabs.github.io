@@ -29,7 +29,7 @@ So before assigning any pin in the schematic, three checks. Is it a strapping pi
 
 ## Leave yourself a way back in
 
-MML-01 has real BOOT and RESET buttons even though the chip has native USB, because native USB is not a guarantee. The USB Serial/JTAG peripheral lives inside the chip, and firmware that crashes early, reconfigures GPIO19 and GPIO20, or drops into deep sleep on boot can take your only interface with it. If you can hold GPIO0 low and toggle EN, you always get back to the ROM bootloader.
+PCB 1 has real BOOT and RESET buttons even though the chip has native USB, because native USB is not a guarantee. The USB Serial/JTAG peripheral lives inside the chip, and firmware that crashes early, reconfigures GPIO19 and GPIO20, or drops into deep sleep on boot can take your only interface with it. If you can hold GPIO0 low and toggle EN, you always get back to the ROM bootloader.
 
 Bring UART0 out as well, GPIO43 for TX and GPIO44 for RX, plus ground. Three pads cost nothing and are the difference between recovering a board and reworking it.
 
@@ -45,7 +45,7 @@ Then match the divider to the converter's usable window rather than to 0 to 3.3 
 
 ## Pick parts the firmware already knows
 
-MML-01 uses a BME280 because ESPHome has a first-class component for it. MML-02 reads its field inputs as plain GPIOs behind optocouplers and drives its relays as plain GPIOs, because every mainstream ESP32 firmware can already do both without a line of custom code. A sensor with no existing driver turns a two-line configuration entry into a custom component that somebody has to write, test and maintain, and that somebody is being paid by the client.
+PCB 1 uses a BME280 because ESPHome has a first-class component for it. PCB 2 reads its field inputs as plain GPIOs behind optocouplers and drives its relays as plain GPIOs, because every mainstream ESP32 firmware can already do both without a line of custom code. A sensor with no existing driver turns a two-line configuration entry into a custom component that somebody has to write, test and maintain, and that somebody is being paid by the client.
 
 ```yaml
 sensor:

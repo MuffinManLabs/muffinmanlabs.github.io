@@ -51,9 +51,9 @@ Then pick one pull-up pair for the entire bus and remove the rest. Most breakout
 
 If you are designing the board rather than wiring modules together, the problem mostly disappears. Put the sensors on your own PCB and place one pull-up pair near the controller.
 
-## How MML-01 does it
+## How PCB 1 does it
 
-MML-01 runs a BME280 and a second sensor on one shared I2C bus off the ESP32-S3. There is a single 4.7k pull-up pair on the whole board, placed near the microcontroller, and neither sensor contributes one, because there is no breakout involved. The parts sit on my PCB, not on somebody else's.
+PCB 1 runs a BME280 and a second sensor on one shared I2C bus off the ESP32-S3. There is a single 4.7k pull-up pair on the whole board, placed near the microcontroller, and neither sensor contributes one, because there is no breakout involved. The parts sit on my PCB, not on somebody else's.
 
 That is the whole trick. The pull-up pair is a property of the bus, so it is drawn once, in one place, and it appears exactly once in the BOM.
 

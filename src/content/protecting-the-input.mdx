@@ -9,7 +9,7 @@ Everything that goes wrong with a power input arrives through the connector: a s
 
 ## The order, and why it is that order
 
-On MML-02 the 24V front end runs, from the screw terminal inward: PPTC, bridge rectifier, TVS, bulk electrolytic, buck.
+On PCB 2 the 24V front end runs, from the screw terminal inward: PPTC, bridge rectifier, TVS, bulk electrolytic, buck.
 
 The fuse goes first because everything downstream, the TVS included, should sit behind overcurrent protection. A TVS fails short, and a short with nothing in front of it is a fire.
 
@@ -43,7 +43,7 @@ A series Schottky is one part and it always works, at a forward drop of 0.3 to 0
 
 Above roughly an amp, use a P-channel MOSFET. Drain to the incoming supply, source to the load, so the body diode conducts in the normal direction. Gate to ground through 10k to 100k gives a large negative gate-source voltage and turns the FET fully on. Reverse the supply and gate-source goes to zero: FET off, body diode reverse-biased. At 24V add a Zener from gate to source, since most P-FETs are rated 20V gate-source maximum. The drop then becomes current times RDS(on): 50 milliohms at 1A is 50 mV, against 400 mV for the Schottky.
 
-If the input might be AC as well as DC, neither of those is the answer: use a full bridge rectifier. That is what MML-02 does, because its terminal takes 9–36 VDC or 24 VAC and an installer should not have to care which way round two field wires go. It costs two forward drops instead of one — roughly 1.8V, so 9V in still leaves about 7.2V for a 5V buck — and reverse-wired DC stops being something you protect against and becomes impossible.
+If the input might be AC as well as DC, neither of those is the answer: use a full bridge rectifier. That is what PCB 2 does, because its terminal takes 9–36 VDC or 24 VAC and an installer should not have to care which way round two field wires go. It costs two forward drops instead of one — roughly 1.8V, so 9V in still leaves about 7.2V for a 5V buck — and reverse-wired DC stops being something you protect against and becomes impossible.
 
 ## Bulk capacitance and hot plug
 

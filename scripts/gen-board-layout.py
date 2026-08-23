@@ -2,7 +2,7 @@
 """
 Generate src/components/pcb/layoutMML01.ts straight from the real KiCad board.
 
-The portfolio diagram is not an artist's impression of MML-01 — it IS MML-01:
+The portfolio diagram is not an artist's impression of PCB 1 — it IS PCB 1:
 board outline, every copper track with its real net name and width, every via,
 every footprint with its real placement and rotation, the twelve test points
 and the silkscreen legends all come out of ESP32S3_PlantMonitor.kicad_pcb.
@@ -207,6 +207,19 @@ def parse(pcb_path):
             continue  # already drawn by the test point / button renderers
         silk.append({"x": round(x - ox, 2), "y": round(y - oy, 2), "text": txt,
                      "size": 1.15, "rot": round(-r, 1) or None})
+    # ── sanity floor ─────────────────────────────────────────────────────────
+    # The regexes above anchor on KiCad 10's exact tab indentation. If a
+    # future KiCad reformats the file, they don't crash — they quietly parse
+    # to empty lists and the board drawing comes out emptier. The real board
+    # has 415 segments and 50+ footprints; anything far below that means the
+    # parse silently failed, so fail loudly instead of emitting a hollow file.
+    if len(traces) < 300 or len(parts) < 30:
+        raise SystemExit(
+            f"parse sanity check failed: {len(traces)} traces / {len(parts)} parts "
+            f"(expected ≥300 / ≥30) — the board file's formatting has likely "
+            f"changed and the regexes need updating"
+        )
+
     return dict(W=W, H=H, traces=traces, vias=vias, parts=parts,
                 tps=tps, holes=holes, silk=silk)
 
@@ -274,7 +287,7 @@ def emit(d):
     add('import type { BoardLayout } from "./BoardSVG";')
     add("")
     add("/* ════════════════════════════════════════════════════════════════════════")
-    add("   MML-01 — ESP32-S3 Wi-Fi plant monitor.")
+    add("   PCB 1 — ESP32-S3 Wi-Fi plant monitor.")
     add(f"   {d['W']} × {d['H']} mm, 4-layer (signal / GND / GND / signal), lead-free HASL.")
     add("")
     add("   GENERATED — do not hand-edit. Every coordinate below is read out of the")

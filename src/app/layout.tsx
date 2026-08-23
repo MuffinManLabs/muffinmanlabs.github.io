@@ -30,7 +30,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: "/" },
+  alternates: {
+    canonical: "/",
+    types: { "application/rss+xml": [{ url: "/feed.xml", title: "Field Notes" }] },
+  },
   keywords: [
     "KiCad PCB design",
     "PCB layout",
@@ -72,10 +75,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    /* suppressHydrationWarning: the inline script below stamps data-js on
+       <html> before React hydrates, and React should not fight it */
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${instrument.variable} antialiased`}
       >
+        {/* The .reveal sections hide themselves and wait for JavaScript to
+            scroll them in. This stamp is the proof JS actually runs: the
+            hidden state in globals.css is scoped to html[data-js], so a
+            blocked bundle (ad-blocker, proxy, old browser) degrades to a
+            fully visible page instead of blank space below the hero. */}
+        <script dangerouslySetInnerHTML={{ __html: 'document.documentElement.dataset.js="1"' }} />
         <div
           dangerouslySetInnerHTML={{
             __html:

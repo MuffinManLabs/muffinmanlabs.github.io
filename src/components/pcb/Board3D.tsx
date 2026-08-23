@@ -75,6 +75,21 @@ export default function Board3D({
   async function load() {
     if (state !== "idle") return;
     setState("loading");
+    /* The full cleanup only exists once load() finishes, but the renderer is
+       created and appended long before the ~430 KB model has downloaded. If
+       the visitor navigates away mid-download, the unmount cleanup used to
+       find nothing to run — and the load continuation would then attach its
+       observers and start an eternal render loop into a detached canvas.
+       So: everything created before the finish line registers a disposer in
+       `partial`, and the unmount cleanup flips `disposed` so each await can
+       notice and tear down instead of carrying on. */
+    let disposed = false;
+    const partial: (() => void)[] = [];
+    const disposePartial = () => partial.splice(0).forEach((fn) => fn());
+    cleanupRef.current = () => {
+      disposed = true;
+      disposePartial();
+    };
     try {
       const [THREE, { GLTFLoader }, { DRACOLoader }, { OrbitControls }, { RoomEnvironment }] =
         (await prefetch()) as [
@@ -86,7 +101,7 @@ export default function Board3D({
         ];
 
       const mount = mountRef.current;
-      if (!mount) return;
+      if (disposed || !mount) return;
 
       const scene = new THREE.Scene();
       scene.background = null;
@@ -106,6 +121,10 @@ export default function Board3D({
       renderer.toneMapping = THREE.NeutralToneMapping;
       renderer.toneMappingExposure = 1.0;
       mount.appendChild(renderer.domElement);
+      partial.push(() => {
+        renderer.dispose();
+        renderer.domElement.remove();
+      });
 
       const camera = new THREE.PerspectiveCamera(
         34,
@@ -123,6 +142,10 @@ export default function Board3D({
       const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
       scene.environmentIntensity = 0.45;
       scene.environment = envRT.texture;
+      partial.push(() => {
+        envRT.dispose();
+        pmrem.dispose();
+      });
 
       /* directional lights on top of the environment for shape and highlights */
       scene.add(new THREE.HemisphereLight(0xffffff, 0x35301f, 0.28));
@@ -141,8 +164,11 @@ export default function Board3D({
       draco.setDecoderPath("/draco/");
       const loader = new GLTFLoader();
       loader.setDRACOLoader(draco);
+      partial.push(() => draco.dispose());
 
       const gltf = await loader.loadAsync(src);
+      /* the unmount cleanup already flushed `partial` — just stop here */
+      if (disposed) return;
       const board = gltf.scene;
 
       /* ── material pass ──────────────────────────────────────────────────
@@ -303,6 +329,27 @@ export default function Board3D({
         controls.autoRotate = false;
       });
 
+      /* OrbitControls is pointer-and-wheel only, so the canvas gets a tab
+         stop and arrow-key rotation of the presentation pivot — enough to
+         turn the board over without a mouse. */
+      renderer.domElement.tabIndex = 0;
+      renderer.domElement.setAttribute(
+        "aria-label",
+        "3D board view — rotate with the arrow keys"
+      );
+      const onKey = (e: KeyboardEvent) => {
+        const step = 0.15;
+        if (e.key === "ArrowLeft") pivot.rotation.y -= step;
+        else if (e.key === "ArrowRight") pivot.rotation.y += step;
+        else if (e.key === "ArrowUp") pivot.rotation.x -= step;
+        else if (e.key === "ArrowDown") pivot.rotation.x += step;
+        else return;
+        e.preventDefault();
+        controls.autoRotate = false;
+        invalidate();
+      };
+      renderer.domElement.addEventListener("keydown", onKey);
+
       /* ── render on demand ───────────────────────────────────────────────
          The old loop rendered every frame for as long as the page was open,
          including while the board was scrolled well off-screen. Now a frame
@@ -410,15 +457,26 @@ export default function Board3D({
           else mat?.dispose();
         });
         renderer.dispose();
+        renderer.domElement.removeEventListener("keydown", onKey);
         renderer.domElement.remove();
         apiRef.current = null;
       };
 
       setState("ready");
     } catch {
+      disposePartial();
       setState("error");
     }
   }
+
+  /* The "Rotate in 3D" button unmounts the instant the viewer is ready,
+     which used to drop a keyboard user's focus into the void. Hand it to
+     the Back button instead. focus-visible keeps the ring keyboard-only,
+     so pointer users see nothing change. */
+  const flipBtnRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (state === "ready") flipBtnRef.current?.focus({ preventScroll: true });
+  }, [state]);
 
   return (
     <div>
@@ -430,6 +488,7 @@ export default function Board3D({
               Drag to rotate · scroll to zoom
             </span>
             <button
+              ref={flipBtnRef}
               onClick={() => {
                 apiRef.current?.flip();
                 setFlipped((v) => !v);

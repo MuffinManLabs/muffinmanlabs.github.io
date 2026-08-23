@@ -2,7 +2,7 @@ import { PCB } from "./pcbData";
 import type { BoardLayout, Part, Trace } from "./BoardSVG";
 
 /* ════════════════════════════════════════════════════════════════════════
-   MML-02 — ESP32-S3 Protected Field I/O Controller.
+   PCB 2 — ESP32-S3 Protected Field I/O Controller.
    110 × 76 mm, 2-layer 1 oz, unbroken bottom ground under logic + converter.
 
    The floorplan is the argument: one moat down the middle, logic left,
@@ -162,7 +162,7 @@ export const MML02: BoardLayout = {
   ],
 
   parts: [
-    /* U1 — same module block as MML-01, zero redesign */
+    /* U1 — same module block as PCB 1, zero redesign */
     { kind: "module", ref: "U1", label: "ESP32-S3-WROOM-1", x: 7, y: -5.5, w: 18, h: 25.5, ant: 6 },
 
     /* USB-C, programming only, on the edge opposite every field terminal */
@@ -269,7 +269,7 @@ export const MML02: BoardLayout = {
   ],
 
   silk: [
-    { x: 86.0, y: 34.5, text: "MML-02 · FIELD I/O", size: 1.2 },
+    { x: 86.0, y: 34.5, text: "PCB 2 · FIELD I/O", size: 1.2 },
     { x: 86.0, y: 37.6, text: "≤ 2 A @ ≤ 30 V — NOT FOR MAINS", size: 1.0 },
     { x: 24.0, y: 62.5, text: "LOADS SHARE GND · NOT ISOLATED", size: 1.0 },
     { x: 69.94, y: 38.6, text: "VALVE", size: 1.1 },
@@ -336,7 +336,7 @@ export const MML02: BoardLayout = {
       label: "USB 2.0 pair",
       color: PCB.enig,
       note:
-        "The same block as MML-01, reused with zero redesign — coupled pair, length match, 5.1 k CC pulldowns, ESD, polyfuse. USB never powers field loads: a Schottky ORs it into the 5 V rail so the board flashes on the bench with nothing connected, and the buck can never back-feed a laptop.",
+        "The same block as PCB 1, reused with zero redesign — coupled pair, length match, 5.1 k CC pulldowns, ESD, polyfuse. USB never powers field loads: a Schottky ORs it into the 5 V rail so the board flashes on the bench with nothing connected, and the buck can never back-feed a laptop.",
       parts: ["J1", "U3", "R3", "R4"],
     },
     {
@@ -344,7 +344,7 @@ export const MML02: BoardLayout = {
       label: "Test points",
       color: PCB.enigBright,
       note:
-        "VIN_RECT, 5V, 3V3, GND ×2 and a small SW pad, plus the EN/IO0/UART trio carried over from MML-01. Probe ripple at the output capacitor, never at FB.",
+        "VIN_RECT, 5V, 3V3, GND ×2 and a small SW pad, plus the EN/IO0/UART trio carried over from PCB 1. Probe ripple at the output capacitor, never at FB.",
       tps: true,
     },
   ],

@@ -12,9 +12,14 @@ import { MML01 } from "./layoutMML01";
 import { MML02 } from "./layoutMML02";
 
 const ART: Record<string, { layout: BoardLayout; stack: StackLayer[] }> = {
-  "MML-01": { layout: MML01, stack: STACK_4L },
-  "MML-02": { layout: MML02, stack: STACK_2L },
+  "PCB 1": { layout: MML01, stack: STACK_4L },
+  "PCB 2": { layout: MML02, stack: STACK_2L },
 };
+
+/* "PCB 1" → "pcb-1": used as the card's anchor (so a proposal can link one
+   board as /#pcb-1) and as the SVG id namespace, where a raw space would
+   break every url(#...) reference inside the board art */
+const slugId = (id: string) => id.toLowerCase().replace(/\s+/g, "-");
 
 const LAYER_LABEL: Record<LayerKey, string> = {
   all: "All",
@@ -60,7 +65,7 @@ function BoardCard({ board }: { board: Board }) {
   const litNet = art.layout.nets?.find((n) => n.key === net) ?? null;
 
   return (
-    <article className="card overflow-hidden min-w-0">
+    <article id={slugId(board.id)} className="card overflow-hidden min-w-0">
       {/* ── header ─────────────────────────────────────────────────────── */}
       <div className="px-6 sm:px-8 pt-7 pb-6">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -167,7 +172,7 @@ function BoardCard({ board }: { board: Board }) {
                 powered
                 accent={board.accent}
                 net={net}
-                idns={`${board.id.toLowerCase()}-${uid}`}
+                idns={`${slugId(board.id)}-${uid}`}
                 label={`${board.name} — ${art.layout.w} by ${art.layout.h} millimetre board layout`}
               />
             </div>
@@ -184,9 +189,12 @@ function BoardCard({ board }: { board: Board }) {
                 value={net ?? ""}
                 onChange={(k) => setNet((v) => (v === k ? null : k))}
               />
+              {/* aria-live: pressing a net button swaps this text — without it
+                  the interaction is silent for a screen-reader user */}
               <div
                 className="mt-3 rounded-xl p-4 min-h-[70px]"
                 style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+                aria-live="polite"
               >
                 <p
                   className="text-[12.5px] leading-6"
@@ -220,8 +228,8 @@ function BoardCard({ board }: { board: Board }) {
                 <Image
                   src={im.src}
                   alt={im.alt}
-                  width={1400}
-                  height={1000}
+                  width={im.width}
+                  height={im.height}
                   className="block w-full h-auto"
                   sizes="(max-width: 640px) 100vw, 440px"
                 />

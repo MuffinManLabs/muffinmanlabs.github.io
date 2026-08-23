@@ -1322,7 +1322,8 @@ export default function MemoryMapExplorer() {
           needs ~560 px, and below that the rows used to crush rather than pan */}
       <div ref={scrollRef} style={{flex:1,overflow:"auto",padding:"12px 16px 90px"}}>
        <div style={{minWidth:560}}>
-        <h1 style={{fontSize:17,fontWeight:700,color:"#f4efe6",margin:"0 0 4px 0"}}>ARM Cortex-M4 — 4 GB Address Space</h1>
+        {/* h2, not h1 — the page owning this component already has the h1 */}
+        <h2 style={{fontSize:17,fontWeight:700,color:"#f4efe6",margin:"0 0 4px 0"}}>ARM Cortex-M4 — 4 GB Address Space</h2>
         <BlockTree groupKey="root" depth={0} expanded={expanded} onToggle={toggle} matches={matches} bookmarks={bookmarks} onBookmark={toggleBookmark}/>
         {expanded.size===0&&!searchQuery&&<div style={{marginTop:16,padding:"9px 13px",background:"#171614",borderRadius:5,border:"1px solid #24211d"}}>
           <div style={{fontSize:10,fontWeight:700,color:"#635c4f",marginBottom:5}}>LEGEND</div>

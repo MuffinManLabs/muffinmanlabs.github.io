@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ReadingProgress from "@/components/blog/ReadingProgress";
-import { getAllPosts, formatDate } from "@/lib/posts";
+import { getAllPosts, formatDate, postOgImage } from "@/lib/posts";
 import { jsonLd, postSchema } from "@/lib/schema";
 
 export function generateStaticParams() {
@@ -20,8 +20,10 @@ export async function generateMetadata({
      that declares `openGraph` and omits `images` ships a card with no image at
      all, and one that omits `twitter` inherits the SITE's title, so every
      shared Field Note used to preview as the homepage. Both blocks are
-     therefore spelled out in full. */
+     therefore spelled out in full. The image is the post's own generated
+     card, so a shared Field Note previews as itself rather than the homepage. */
   const url = `/blog/${post.slug}`;
+  const og = postOgImage(post.slug);
   return {
     title: `${post.title} | Field Notes`,
     description: post.excerpt,
@@ -36,13 +38,13 @@ export async function generateMetadata({
       publishedTime: post.date,
       authors: ["Ray Malik"],
       locale: "en_US",
-      images: [{ url: "/og.png", width: 1200, height: 630, alt: "MuffinByteLabs — KiCad PCB design" }],
+      images: [{ url: og, width: 1200, height: 630, alt: `${post.title} — Field Notes` }],
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description: post.excerpt,
-      images: ["/og.png"],
+      images: [og],
     },
   };
 }
@@ -76,7 +78,10 @@ export default async function BlogPost({
 
   return (
     <div className="px-6 pt-28 pb-24">
-      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(postSchema(post))} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd(postSchema(post, postOgImage(post.slug)))}
+      />
       <ReadingProgress />
       <article className="max-w-[42rem] mx-auto">
         <Link href="/blog" className="link-quiet inline-flex items-center gap-2 text-sm mb-10">

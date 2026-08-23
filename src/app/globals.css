@@ -97,6 +97,27 @@ body::before {
   mask: var(--logo-mask) center / contain no-repeat;
 }
 
+/* ── hero photo pair — two prints laid on the desk ───────────────────────
+   Each print carries its own tilt on a custom property, so hover can zero
+   it without JS and the reduced-motion block can keep it without moving.
+   The gold ring is the same 6px wash the old portrait wore. */
+.hero-photo {
+  border: 1px solid var(--border);
+  box-shadow:
+    0 0 0 6px rgba(219, 166, 75, 0.06),
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 26px 56px -24px rgba(0, 0, 0, 0.9);
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.35s ease;
+}
+.hero-photo:hover {
+  transform: rotate(0deg) translateY(-4px);
+  box-shadow:
+    0 0 0 6px rgba(219, 166, 75, 0.1),
+    var(--shadow-lift);
+  z-index: 3;
+}
+
 /* Display type: a proper serif, set tight. Body stays in the sans. */
 .display {
   font-family: var(--font-instrument), ui-serif, Georgia, serif;
@@ -206,21 +227,22 @@ body::before {
    `transition`, so the reduced-motion block below can actually reach it */
 .xfade { transition: opacity 0.35s ease; }
 
-/* section reveal on scroll */
-.reveal {
+/* Section reveal on scroll. The hidden state is scoped to html[data-js] — a
+   stamp set by an inline script in the layout — so the sections only hide
+   when JavaScript demonstrably runs. Scripting disabled, a blocked bundle,
+   or a browser too old for the observer all degrade to visible content
+   rather than a blank page below the hero. */
+html[data-js] .reveal {
   opacity: 0;
   transform: translateY(14px);
   transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
-.reveal.shown { opacity: 1; transform: none; }
-
-/* if scripting is off the reveal never arms, but belt and braces */
-@media (scripting: none) {
-  .reveal { opacity: 1; transform: none; }
-}
+html[data-js] .reveal.shown { opacity: 1; transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .pcb-flow, .pcb-pulse { animation: none !important; }
-  .reveal { transition: none; opacity: 1; transform: none; }
+  html[data-js] .reveal { transition: none; opacity: 1; transform: none; }
   .card, .seg, .link-quiet, .xfade { transition: none; }
+  .hero-photo { transition: none; }
+  .hero-photo:hover { transform: rotate(var(--tilt, 0deg)); }
 }

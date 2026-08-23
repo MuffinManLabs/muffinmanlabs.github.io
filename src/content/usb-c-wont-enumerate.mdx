@@ -35,7 +35,7 @@ Two resistors. Both to ground. It costs a cent.
 
 ## The rest of the port
 
-On MML-01 the port is a sink only, 5V default, no PD controller. The remaining parts each have exactly one job.
+On PCB 1 the port is a sink only, 5V default, no PD controller. The remaining parts each have exactly one job.
 
 - A polyfuse in series with VBUS, picked so its hold current sits above the board's true peak, which for that design means ESP32-S3 Wi-Fi transmit spikes plus the MCP73831 charging at full rate, and its trip current sits below what a host is willing to deliver. The hold current derates with ambient temperature, and the fuse's own resistance shows up as a permanent drop on VBUS.
 - A USBLC6-2SC6 at the connector for ESD. It is a flow-through part in SOT-23-6: each data line enters on one pin and leaves on the pin directly opposite, so D+ and D- pass through it with no stubs. Put it within a few millimeters of the receptacle. Protection placed after 20 mm of trace has already let the transient into your board.

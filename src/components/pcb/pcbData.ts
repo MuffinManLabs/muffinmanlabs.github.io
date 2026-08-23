@@ -24,7 +24,7 @@ export const PCB = {
 } as const;
 
 /* ---- Hero board-house string + status strip ---- */
-export const FAB_STRING = "MML-PCB · REV_A · KICAD 10 NATIVE · 2 & 4-LAYER · FR-4 · ENIG";
+export const FAB_STRING = "REV_A · KICAD 10 NATIVE · 2 & 4-LAYER · FR-4 · ENIG";
 export const STATUS_OK = "DRC: 0 · ERC: 0";
 export const STATUS_SPECS = "KICAD 10 · 2 & 4-LAYER · FR-4 · JLCPCB · 2 BOARDS ORDERED";
 export const POWER_STATUS = "> board powered :: rails nominal :: DRC clean / ERC clean";
@@ -32,7 +32,27 @@ export const DESIGNATOR =
   "KICAD PCB DESIGN SPECIALIST · ESP32 BOARDS · JLCPCB PRODUCTION-READY";
 /* the hero proof chip — the one claim that has hardware behind it */
 export const HERO_PROOF =
-  "2 boards designed, ordered and fabricated · MML-01 built and brought up";
+  "2 boards designed, ordered and fabricated · PCB 1 built and brought up";
+
+/* ---- Contact — one address, one mailto, declared once ------------------
+   The body is a brief template: inbound mail otherwise arrives as "I need
+   a PCB" with none of the four facts a quote actually needs. A prefilled
+   mailto costs the sender nothing and needs no third-party form endpoint. */
+export const CONTACT_EMAIL = "muffinbytelabs@gmail.com";
+export const CONTACT_MAILTO = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+  "PCB project"
+)}&body=${encodeURIComponent(
+  [
+    "What the board does:",
+    "",
+    "Target fab and quantity:",
+    "",
+    "Files you already have (KiCad, PDF, DXF, image):",
+    "",
+    "Deadline:",
+    "",
+  ].join("\n")
+)}`;
 
 /* The three things a client wants to know before they write the first
    message. Stated at the top rather than buried in a contract page. */
@@ -53,7 +73,7 @@ export const ABOUT_PARAGRAPHS: string[] = [
 
 export const ABOUT_CREDENTIALS: { label: string; detail: string }[] = [
   { label: "KiCad 8–10, native", detail: "no Altium, no lossy conversions" },
-  { label: "4-layer, built and brought up", detail: "MML-01 measured against every acceptance step" },
+  { label: "4-layer, built and brought up", detail: "PCB 1 measured against every acceptance step" },
   { label: "JLCPCB / PCBWay ready", detail: "rules set from the capability sheet" },
   { label: "Documented hand-offs", detail: "README, REV notes, Git history" },
   { label: "Money-back guarantee", detail: "written into every contract" },
@@ -71,11 +91,58 @@ export type Service = {
   desc: string;
   bullets: string[];
   turnaround: string;
+  /** one link to public evidence of this exact kind of work, where it exists */
+  sample?: { label: string; href: string; external?: boolean };
 };
 
+/* Ordered the way the work actually arrives: a review is the cheapest way
+   to try me, so it leads. Each service points at a piece of public evidence
+   — the same honesty bar as everything else on the site. */
 export const SERVICES: Service[] = [
   {
     id: "SVC-01",
+    title: "Pre-fab design review",
+    desc: "A second set of eyes on your board before you spend money at the fab. A review is a document — and you can read the ones my own board went through before you pay for one.",
+    bullets: [
+      "DRC / ERC / DFM check against your fab's real capability sheet",
+      "Footprint & part sanity pass — stock, lifecycle, polarity, pin-1, keep-outs",
+      "Written findings ranked by severity, with a concrete recommendation on each",
+    ],
+    turnaround: "most reviews back in 24–48h",
+    sample: {
+      label: "Read a real review",
+      href: "https://github.com/MuffinByteLabs/esp32s3-plant-monitor/blob/main/docs/reviews/Design_Review_RevA_2026-07-20.md",
+      external: true,
+    },
+  },
+  {
+    id: "SVC-02",
+    title: "Conversion to native KiCad",
+    desc: "A design that exists as a PDF, DXF, image or another tool's project, redrawn as a clean KiCad project you own outright.",
+    bullets: [
+      "Redrawn sheet by sheet with checked symbols and footprints — not auto-traced",
+      "ERC-clean, with a parity pass against the original before hand-off",
+      "Delivered as the full package: native files, PDF schematic, project-local libraries",
+    ],
+    turnaround: "quoted per sheet count",
+  },
+  {
+    id: "SVC-03",
+    title: "Debug & bring-up help",
+    desc: "The board is back from the fab and won't enumerate, keeps resetting, or runs hot. Worked from your files, photos and guided bench measurements.",
+    bullets: [
+      "A staged bring-up plan — unpowered checks, current-limited first power, rails, buses, firmware",
+      "USB enumeration, brownout and reset-loop diagnosis against the schematic",
+      "Written findings with the fix — and the Rev-B change if the copper is at fault",
+    ],
+    turnaround: "first read of your files within a day",
+    sample: {
+      label: "How I approach it",
+      href: "/blog/usb-c-wont-enumerate",
+    },
+  },
+  {
+    id: "SVC-04",
     title: "New board, idea to fab",
     desc: "From a concept, breadboard prototype, or draft schematic to a manufacturing-ready KiCad project.",
     bullets: [
@@ -84,28 +151,27 @@ export const SERVICES: Service[] = [
       "Full JLCPCB / PCBWay package: Gerbers, drill, BOM with LCSC / Digi-Key part numbers, CPL, PDF schematic, 3D render",
     ],
     turnaround: "small boards in days, not weeks",
+    sample: {
+      label: "A finished one, published in full",
+      href: "https://github.com/MuffinByteLabs/esp32s3-plant-monitor",
+      external: true,
+    },
   },
   {
-    id: "SVC-02",
-    title: "Pre-fab design review",
-    desc: "A second set of eyes on your board before you spend money at the fab.",
-    bullets: [
-      "DRC / ERC / DFM check against your fab's real capabilities",
-      "Footprint & part sanity pass — stock, lifecycle, polarity, pin-1, keep-outs",
-      "Written findings report with prioritized, concrete fixes",
-    ],
-    turnaround: "most reviews back in 24–48h",
-  },
-  {
-    id: "SVC-03",
+    id: "SVC-05",
     title: "Fix, revise & finish",
     desc: "Work inside your existing KiCad project without breaking what already works.",
     bullets: [
       "Schematic edits, re-routes, and Rev-B board revisions",
       "Power & thermal fixes — pours, thermal vias, trace widths sized to current",
-      "DXF / PDF / image redrawn from scratch as a clean native KiCad project",
+      "Half-finished projects taken through to a complete manufacturing package",
     ],
     turnaround: "scoped and quoted up front",
+    sample: {
+      label: "What my Rev-B notes look like",
+      href: "https://github.com/MuffinByteLabs/esp32s3-plant-monitor/blob/main/docs/RevB_Upgrade_Plan.md",
+      external: true,
+    },
   },
 ];
 
@@ -129,7 +195,7 @@ export type TreeNode = {
 };
 
 export const PACKAGE_TREE: TreeNode = {
-  name: "MML-0X-board/",
+  name: "PCB-0X-board/",
   children: [
     { name: "source/", note: "Editable KiCad project — .kicad_pro / .kicad_sch / .kicad_pcb. The client owns the design, not just the artwork." },
     {
@@ -164,7 +230,7 @@ export const CLEAN_BADGES: Badge[] = [
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   THE PUBLIC REPOSITORY — MML-01, open sourced.
+   THE PUBLIC REPOSITORY — PCB 1, open sourced.
 
    The strongest single piece of evidence on the site: not a render, not a
    claim, but the actual KiCad project and the frozen package that was
@@ -176,11 +242,11 @@ export const REPO = {
   url: "https://github.com/MuffinByteLabs/esp32s3-plant-monitor",
   owner: "MuffinByteLabs",
   name: "esp32s3-plant-monitor",
-  board: "MML-01",
+  board: "PCB 1",
   licence: "CERN-OHL-P v2",
   /* the one-line pitch, used in more than one place */
   blurb:
-    "The complete KiCad project for MML-01 — schematic, layout, the exact package that was uploaded to JLCPCB, and every document that produced it.",
+    "The complete KiCad project for PCB 1 — schematic, layout, the exact package that was uploaded to JLCPCB, and every document that produced it.",
 } as const;
 
 export type RepoDir = { path: string; name: string; note: string };
@@ -213,10 +279,49 @@ export const REPO_TREE: RepoDir[] = [
   },
 ];
 
+/* ── read it in the browser ────────────────────────────────────────────
+   The six documents a client can read in ten seconds with no KiCad
+   install. "Go and look" is work, and a visitor deciding whether this is
+   a portfolio of renders will not do work — so each one is a deep link,
+   not a folder to hunt through. Paths verified against the repo at the
+   commit these notes were written. */
+export const REPO_READS: { label: string; note: string; path: string }[] = [
+  {
+    label: "Pre-fab design review",
+    note: "findings ranked by severity, and what was done about each",
+    path: "blob/main/docs/reviews/Design_Review_RevA_2026-07-20.md",
+  },
+  {
+    label: "Independent second pass",
+    note: "a separate review over the same board, before it was ordered",
+    path: "blob/main/docs/reviews/Design_Review_RevA_2026-07-22_Independent.md",
+  },
+  {
+    label: "Schematic — 8 sheets (PDF)",
+    note: "the full hierarchical schematic, readable without opening KiCad",
+    path: "blob/main/docs/ESP32S3_PlantMonitor_RevA_Schematic.pdf",
+  },
+  {
+    label: "The design document",
+    note: "every part on the board has a paragraph saying why it is there",
+    path: "blob/main/docs/ESP32S3_Plant_Monitor_Final_Design_Document.md",
+  },
+  {
+    label: "Fab layer plots (PDF)",
+    note: "copper, mask and silk, plotted the way the fab sees them",
+    path: "blob/main/docs/ESP32S3_PlantMonitor_RevA_FabLayers.pdf",
+  },
+  {
+    label: "Order notes",
+    note: "the JLCPCB order as decided — settings, remarks, pre-upload checks",
+    path: "blob/main/fabrication/revA/ORDER_NOTES.md",
+  },
+];
+
 /** What a visitor will actually find if they go and look. */
 export const REPO_HIGHLIGHTS: { label: string; note: string }[] = [
   { label: "Five review records", note: "pre-fab, placement, finishing and final layout — findings, severities, fixes" },
-  { label: "An independent second pass", note: "a separate review over the same board before it was ordered" },
+  { label: "A footprint check record", note: "every footprint verified against its land pattern before ordering" },
   { label: "The pre-order gate list", note: "DRC / ERC clean, schematic parity, polarity checked against a pin-1 table" },
   { label: "A bring-up guide", note: "staged, with the number each step has to hit" },
   { label: "Rev B notes", note: "an honest list of what I would change next" },
@@ -253,13 +358,16 @@ export type Board = {
   model?: string;
   /** public repository, where the whole project can be read */
   repo?: { url: string; owner: string; name: string };
-  /** board imagery — captioned, and honest about what each one is */
-  images?: { src: string; alt: string; tag: string; caption: string }[];
+  /** board imagery — captioned, and honest about what each one is.
+      width/height are the file's real pixel dimensions: a guessed aspect
+      ratio reserves the wrong height and the page shifts when the lazy
+      image decodes mid-scroll. */
+  images?: { src: string; alt: string; tag: string; caption: string; width: number; height: number }[];
 };
 
 export const BOARDS: Board[] = [
   {
-    id: "MML-01",
+    id: "PCB 1",
     name: "ESP32-S3 Wi-Fi Plant Monitor",
     summary:
       "A battery-powered Wi-Fi sensor node: temperature, humidity, pressure, light and soil moisture, on four layers with a proper ground plane pair.",
@@ -272,22 +380,34 @@ export const BOARDS: Board[] = [
     repo: { url: REPO.url, owner: REPO.owner, name: REPO.name },
     images: [
       {
-        src: "/boards/mml01-3d-top.png",
+        src: "/boards/mml01-3d-top.webp",
         tag: "Populated",
-        alt: "KiCad 3D view of MML-01 fully populated, seen from above: the ESP32-S3 module with its antenna overhanging the top edge, USB-C on the left edge, BOOT and RESET buttons, BME280 and VEML7700 sensors on the right, and battery and soil connectors along the bottom",
+        alt: "KiCad 3D view of PCB 1 fully populated, seen from above: the ESP32-S3 module with its antenna overhanging the top edge, USB-C on the left edge, BOOT and RESET buttons, BME280 and VEML7700 sensors on the right, and battery and soil connectors along the bottom",
         caption: "Every part placed and checked for fit before a single board was ordered.",
+        width: 1400,
+        height: 951,
       },
       {
-        src: "/boards/mml01-3d-iso.png",
+        src: "/boards/mml01-3d-iso.webp",
         tag: "Bare board",
-        alt: "Angled KiCad 3D view of the bare MML-01 board showing the routed copper, the module's exposed ground pad with its stitching vias, twelve gold test points and four M3 mounting holes",
+        alt: "Angled KiCad 3D view of the bare PCB 1 board showing the routed copper, the module's exposed ground pad with its stitching vias, twelve gold test points and four M3 mounting holes",
         caption: "The same board stripped back to bare copper, test points and mounting holes.",
+        width: 1400,
+        height: 1064,
+      },
+      {
+        src: "/boards/mml01-3d-bottom.webp",
+        tag: "Bottom",
+        alt: "KiCad 3D view of the PCB 1 bottom side: light routing over the plane pair, the through-hole UART recovery pads, and a silkscreen ID block reading ESP32-S3 Plant Monitor, Rev A 2026-08, MuffinByteLabs.com, designed by Ray Malik",
+        caption: "The back side, with the ID block every board ships with — name, revision, date, and who to ask.",
+        width: 1544,
+        height: 1152,
       },
     ],
   },
 
   {
-    id: "MML-02",
+    id: "PCB 2",
     name: "Protected Field I/O Controller",
     summary:
       "A Wi-Fi board that safely reads 24 V equipment signals and switches real equipment — opto-isolated inputs, relay and MOSFET outputs, behind a proper isolation barrier.",
@@ -331,11 +451,13 @@ export type SkillGroup = {
 export const CAPABILITY_INTRO =
   "Anyone can route a board that looks finished. Below is what sits underneath one — the circuit blocks I design, the layout rules I hold to, and the manufacturing decisions taken long before a file leaves.";
 
-/* NOTE: `skills` and CAPABILITY_LIMITS below are no longer rendered. Aug 2026,
-   Ray: keep Capability but cut it back to "just the main stuff" — the section
-   is now the five titles and the one-line argument each. The detail is kept
-   here rather than deleted, the same way the other retired sections are, so
-   bringing a group back is a render change and not a rewrite. */
+/* NOTE: the `skills` arrays below are no longer rendered. Aug 2026, Ray: keep
+   Capability but cut it back to "just the main stuff" — the section is now the
+   five titles and the one-line argument each. The detail is kept here rather
+   than deleted, the same way the other retired sections are, so bringing a
+   group back is a render change and not a rewrite. CAPABILITY_LIMITS and
+   CAPABILITY_LIMITS_LEAD came back into service Aug 2026: they render in the
+   "What I turn down" card on /services. */
 export const SKILL_GROUPS: SkillGroup[] = [
   {
     id: "CAP-01",
@@ -452,7 +574,7 @@ export const SKILL_GROUPS: SkillGroup[] = [
    it earns its place for the same reason the numbers above do.
    ────────────────────────────────────────────────────────────────────── */
 export const CAPABILITY_LIMITS_LEAD =
-  "And the work I turn down. Knowing where the line sits is part of the service — if your board is on the far side of it, you will hear that in the quote rather than halfway through.";
+  "Knowing where the line sits is part of the service — if your board is on the far side of it, you will hear that in the quote rather than halfway through.";
 
 export const CAPABILITY_LIMITS: string[] = [
   "Mains-voltage design",

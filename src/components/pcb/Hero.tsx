@@ -1,30 +1,53 @@
 import Image from "next/image";
-import { HERO_TERMS, REPO } from "./pcbData";
+import { HERO_TERMS, CONTACT_MAILTO, REPO } from "./pcbData";
 import GitHubMark from "./GitHubMark";
 
 /* ════════════════════════════════════════════════════════════════════════
-   Hero — who I am, what I do, and nothing else. No status readouts, no
-   fake terminal, no scrolling marquee. Face, name, specialism, one line.
+   Hero — who I am, what I do, and nothing else. Two photographs instead of
+   a portrait roundel: the person, and the person actually at the bench —
+   laid like two prints on a desk, one tucked slightly under the other.
+   The tilt and hover-straighten live in globals.css (.hero-photo), where
+   the reduced-motion rules can reach them.
    ════════════════════════════════════════════════════════════════════════ */
 export default function Hero() {
   return (
     <section className="px-6 pt-28 pb-16 sm:pt-36 sm:pb-24">
       <div className="max-w-2xl mx-auto text-center">
-        <Image
-          src="/portrait.jpg"
-          alt="Ray Malik"
-          width={720}
-          height={720}
-          priority
-          className="mx-auto rounded-full object-cover"
-          style={{
-            width: 200,
-            height: 200,
-            border: "1px solid var(--border)",
-            boxShadow:
-              "0 0 0 6px rgba(219,166,75,0.06), 0 2px 4px rgba(0,0,0,0.4), 0 26px 56px -24px rgba(0,0,0,0.9)",
-          }}
-        />
+        <div className="flex items-start justify-center">
+          <div
+            className="hero-photo relative overflow-hidden rounded-2xl shrink-0"
+            style={{ "--tilt": "-2.5deg", width: "min(37vw, 220px)", zIndex: 2 } as React.CSSProperties}
+          >
+            <Image
+              src="/face_shot.webp"
+              alt="Ray Malik at his electronics bench — oscilloscope, finished boards and a KiCad layout on the screen behind him"
+              width={440}
+              height={587}
+              priority
+              className="block w-full h-auto"
+            />
+          </div>
+          <div
+            className="hero-photo relative overflow-hidden rounded-2xl shrink-0"
+            style={
+              {
+                "--tilt": "2deg",
+                width: "min(50vw, 310px)",
+                marginLeft: "max(-6vw, -2.5rem)",
+                marginTop: "min(14vw, 5rem)",
+              } as React.CSSProperties
+            }
+          >
+            <Image
+              src="/soldering.webp"
+              alt="Ray Malik hand-soldering a circuit board held in a PCB holder at his bench"
+              width={620}
+              height={465}
+              priority
+              className="block w-full h-auto"
+            />
+          </div>
+        </div>
 
         <h1 className="display mt-10 text-[3rem] sm:text-[4.25rem]" style={{ color: "var(--text)" }}>
           Ray Malik
@@ -43,7 +66,8 @@ export default function Hero() {
         >
           I turn circuit ideas and breadboard prototypes into boards a factory
           can actually build &mdash; schematic, layout, and the complete
-          manufacturing package.
+          manufacturing package. Computer-science degree underneath, so the
+          layout is drawn knowing what the firmware will ask of it.
         </p>
 
         {/* Someone who lands here and wants to hire him had, until now, no
@@ -51,7 +75,7 @@ export default function Hero() {
             the footer. One primary action, one quiet one. */}
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
           <a
-            href="mailto:muffinbytelabs@gmail.com?subject=PCB%20project"
+            href={CONTACT_MAILTO}
             className="inline-flex items-center gap-2 text-[14px] px-5 py-2.5 rounded-full"
             style={{
               background: "var(--text)",

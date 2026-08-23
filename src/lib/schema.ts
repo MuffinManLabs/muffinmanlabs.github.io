@@ -25,7 +25,7 @@ const person = {
   name: "Ray Malik",
   url: SITE,
   email: `mailto:${EMAIL}`,
-  image: `${SITE}/portrait.jpg`,
+  image: `${SITE}/face_shot.webp`,
   jobTitle: "PCB Design Engineer",
   sameAs: [GITHUB_ORG],
   description:
@@ -65,6 +65,8 @@ export const homeSchema = {
         "PCB layout",
         "Schematic capture",
         "Pre-fabrication design review",
+        "Schematic conversion to KiCad",
+        "PCB debug and bring-up",
         "Manufacturing package preparation",
       ],
     },
@@ -78,8 +80,8 @@ export const homeSchema = {
          which also covers the W and S variants this project does not use.
          No `isPartOf`: the repository is not part of this website. */
       "@type": ["SoftwareSourceCode", "CreativeWork"],
-      "@id": `${SITE}/#mml01`,
-      name: "MML-01 — ESP32-S3 Wi-Fi Plant Monitor",
+      "@id": `${SITE}/#pcb1`,
+      name: "PCB 1 — ESP32-S3 Wi-Fi Plant Monitor",
       description:
         "Open-hardware KiCad 10 project for a 4-layer ESP32-S3 Wi-Fi sensor board: schematic, layout, the frozen JLCPCB manufacturing package, design document, design reviews and bring-up guide.",
       codeRepository: BOARD_REPO,
@@ -98,14 +100,18 @@ export const homeSchema = {
   ],
 };
 
-/** A Field Note. */
-export function postSchema(post: {
-  slug: string;
-  title: string;
-  excerpt: string;
-  date: string;
-  tag: string;
-}) {
+/** A Field Note. `image` is the post's own OG card when one was generated,
+    site-relative (e.g. "/og/slug.png"); the shared card is the fallback. */
+export function postSchema(
+  post: {
+    slug: string;
+    title: string;
+    excerpt: string;
+    date: string;
+    tag: string;
+  },
+  image?: string
+) {
   const url = `${SITE}/blog/${post.slug}`;
   return {
     "@context": "https://schema.org",
@@ -120,9 +126,13 @@ export function postSchema(post: {
     datePublished: post.date,
     articleSection: post.tag,
     inLanguage: "en",
-    image: `${SITE}/og.png`,
-    author: { "@id": PERSON_ID },
-    publisher: { "@id": SERVICE_ID },
+    image: `${SITE}${image ?? "/og.png"}`,
+    /* Minimal inline nodes rather than bare @id references: search engines
+       parse each page's structured data standalone, so an @id pointing at a
+       node that only exists in the homepage's @graph resolves to nothing and
+       the post loses Article eligibility on missing author.name. */
+    author: { "@type": "Person", "@id": PERSON_ID, name: "Ray Malik", url: SITE },
+    publisher: { "@type": "Organization", "@id": SERVICE_ID, name: "MuffinByteLabs", url: SITE },
     isPartOf: { "@id": `${SITE}/#website` },
   };
 }

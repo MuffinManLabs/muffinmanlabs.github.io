@@ -1,5 +1,5 @@
 import Reveal from "./Reveal";
-import { SKILL_GROUPS, CAPABILITY_INTRO, HANDOFF, HANDOFF_NOTE } from "./pcbData";
+import { SKILL_GROUPS, CAPABILITY_INTRO, HANDOFF, HANDOFF_NOTE, CONTACT_MAILTO } from "./pcbData";
 
 /* ════════════════════════════════════════════════════════════════════════
    Capability — five lines about what I do, then what actually arrives.
@@ -65,7 +65,8 @@ export default function Capability() {
         {/* ── the deliverable ──────────────────────────────────────────── */}
         <Reveal>
           <div className="card mt-5 sm:mt-6 p-6 sm:p-8">
-            <span className="eyebrow">Every board ships with</span>
+            {/* a real heading, styled by the eyebrow class — visually identical */}
+            <h3 className="eyebrow">Every board ships with</h3>
 
             <ul className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 m-0 p-0 list-none">
               {HANDOFF.map((d) => (
@@ -96,7 +97,7 @@ export default function Capability() {
 
             <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
               <a
-                href="mailto:muffinbytelabs@gmail.com?subject=PCB%20project"
+                href={CONTACT_MAILTO}
                 className="inline-flex items-center gap-2 text-[13.5px] px-4 py-2.5 rounded-full transition-transform"
                 style={{
                   background: "var(--text)",

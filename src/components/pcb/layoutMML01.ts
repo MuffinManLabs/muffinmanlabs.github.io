@@ -2,7 +2,7 @@ import { PCB } from "./pcbData";
 import type { BoardLayout } from "./BoardSVG";
 
 /* ════════════════════════════════════════════════════════════════════════
-   MML-01 — ESP32-S3 Wi-Fi plant monitor.
+   PCB 1 — ESP32-S3 Wi-Fi plant monitor.
    62.5 × 44.5 mm, 4-layer (signal / GND / GND / signal), lead-free HASL.
 
    GENERATED — do not hand-edit. Every coordinate below is read out of the

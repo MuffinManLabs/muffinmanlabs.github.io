@@ -29,7 +29,7 @@ A 100nF 0402 with 0.6 nH of ESL self-resonates near 20 MHz. Below that it behave
 - Two vias per pad where there is room. Parallel vias roughly halve that inductance.
 - The return counts equally. Ground via at the ground pad, and no plane split or crowded via field forcing a detour. A perfect power path with a 20 mm return detour is still a 20 mm loop.
 - One capacitor per power pin, not one per chip. Each pin has its own package parasitics and its own local demand, so a QFN with four VDD pins gets four 100nF. An ESP32-S3 module presents a single 3V3 pin, so it gets one 100nF plus bulk beside it.
-- Two-layer boards are harder: the plane is a pour with routing cut through it. On MML-01 and MML-02 I place decoupling with the IC before routing anything.
+- Two-layer boards are harder: the plane is a pour with routing cut through it. On PCB 1 and PCB 2 I place decoupling with the IC before routing anything.
 
 ## Stacking values buys less than people expect
 
@@ -45,7 +45,7 @@ MLCC capacitance falls as DC voltage is applied, and small packages fall hardest
 
 The classic symptom: board boots, Wi-Fi associates, board resets. Transmit is bursty, and the module pulls short current peaks in the hundreds of milliamps over a much lower average. If the 3V3 rail sags past the brownout threshold during a burst, you get a reset that looks like a firmware bug and is not.
 
-Espressif's guidance for the WROOM modules is bulk capacitance plus a 100nF right at the 3V3 pin, 10uF being the usual floor. The regulator cannot help: an LDO or buck control loop is good to tens or hundreds of kHz, so anything faster than a few microseconds is handled by capacitors alone. On MML-01 the AP2112K-3.3 keeps its own caps close to itself, and the module gets its own bulk plus a 100nF at the pin.
+Espressif's guidance for the WROOM modules is bulk capacitance plus a 100nF right at the 3V3 pin, 10uF being the usual floor. The regulator cannot help: an LDO or buck control loop is good to tens or hundreds of kHz, so anything faster than a few microseconds is handled by capacitors alone. On PCB 1 the AP2112K-3.3 keeps its own caps close to itself, and the module gets its own bulk plus a 100nF at the pin.
 
 ## The practical version
 

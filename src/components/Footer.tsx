@@ -1,6 +1,6 @@
 import Link from "next/link";
 import GitHubMark from "@/components/pcb/GitHubMark";
-import { REPO } from "@/components/pcb/pcbData";
+import { REPO, CONTACT_EMAIL, CONTACT_MAILTO } from "@/components/pcb/pcbData";
 
 /* One line: how to reach me, and where the writing lives. */
 export default function Footer() {
@@ -13,11 +13,11 @@ export default function Footer() {
         <div className="flex items-center gap-3" style={{ color: "var(--text-2)" }}>
           <span className="logo" aria-hidden style={{ width: 26, height: 26 }} />
           <a
-            href="mailto:muffinbytelabs@gmail.com?subject=PCB%20project"
+            href={CONTACT_MAILTO}
             className="text-sm"
             style={{ color: "var(--accent)" }}
           >
-            muffinbytelabs@gmail.com
+            {CONTACT_EMAIL}
           </a>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
@@ -30,6 +30,9 @@ export default function Footer() {
             <GitHubMark size={14} />
             Board files on GitHub
           </a>
+          <Link href="/services" className="link-quiet text-sm">
+            Services
+          </Link>
           <Link href="/blog" className="link-quiet text-sm">
             Field Notes
           </Link>

@@ -4,9 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-/* Four links. The page is short enough that it does not need more. */
+/* Five links. Services earns its slot: two of the job clusters bid on —
+   conversion and debug — appear nowhere else on the site. */
 const links = [
   { href: "/#work", label: "Work" },
+  { href: "/services", label: "Services" },
   { href: "/#capability", label: "Capability" },
   { href: "/blog", label: "Notes" },
   { href: "/memory-map", label: "Memory Map" },
@@ -59,7 +61,7 @@ export default function Header() {
               MuffinByteLabs
             </span>
           </Link>
-          {/* Four items plus the wordmark overflow a 320px viewport whatever the
+          {/* Five items plus the wordmark overflow a 320px viewport whatever the
               type size, so the list scrolls rather than colliding with the mark.
               At every real width it never actually scrolls. */}
           <ul className="flex items-center gap-4 sm:gap-6 min-w-0 overflow-x-auto no-scrollbar">

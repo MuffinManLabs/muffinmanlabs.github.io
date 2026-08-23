@@ -17,11 +17,11 @@ Then the meter, in resistance mode, everything still unpowered:
 - Rail to rail: 5 V to 3V3, 24 V to 5 V. These should never read low.
 - Input to ground with the leads reversed, if the board claims reverse-polarity protection. Verify the claim now, while it is free.
 
-Continuity from the input terminal through the protection chain is worth another 30 seconds. On MML-02 that path is screw terminal, polyfuse, bridge rectifier, TVS — four parts that can each be missing, backwards or cold-jointed.
+Continuity from the input terminal through the protection chain is worth another 30 seconds. On PCB 2 that path is screw terminal, polyfuse, bridge rectifier, TVS — four parts that can each be missing, backwards or cold-jointed.
 
 ## First power: watch the current, not the board
 
-Use a bench supply with an adjustable current limit. Set the voltage to the nominal input, then set the limit just above what the board should idle at — for MML-02 at 24 V, around 100 mA, generous for a buck's quiescent draw plus an idle LDO.
+Use a bench supply with an adjustable current limit. Set the voltage to the nominal input, then set the limit just above what the board should idle at — for PCB 2 at 24 V, around 100 mA, generous for a buck's quiescent draw plus an idle LDO.
 
 Bring the voltage up and watch the supply's current display, not the board. If it drops into constant current, the limit did its job: kill it and go find the short. That single habit is what stands between a rework and a scrapped board.
 
@@ -50,15 +50,15 @@ Do the arithmetic before calling it a fault: an AP2112K dropping 5 V to 3.3 V at
 
 With the rails proven, bring up the digital plumbing:
 
-- I2C: run a bus scan. On MML-01 it should return exactly the BME280 at 0x76 or 0x77 depending on the SDO strap, plus the second sensor's address. Nothing found usually means missing pull-ups or the wrong pins; every address responding means SDA is stuck low.
+- I2C: run a bus scan. On PCB 1 it should return exactly the BME280 at 0x76 or 0x77 depending on the SDO strap, plus the second sensor's address. Nothing found usually means missing pull-ups or the wrong pins; every address responding means SDA is stuck low.
 - Check the idle level and rise time on a scope. With one 4.7k pull-up pair at 3.3 V, rise time must be under 1000 ns for 100 kHz and under 300 ns for 400 kHz. Too slow means too much bus capacitance or too weak a pull-up — and it is one pull-up pair per bus, not per device.
-- Serial: confirm the USB or UART path and the boot straps. On MML-01, BOOT and RESET have to actually drop the ESP32-S3 into download mode, and the first flash attempt is that test.
+- Serial: confirm the USB or UART path and the boot straps. On PCB 1, BOOT and RESET have to actually drop the ESP32-S3 into download mode, and the first flash attempt is that test.
 
 ## Minimal firmware, then the real thing
 
 Load the smallest program that proves one fact. A blink, or a serial print. Then a single sensor read. Only then the real firmware.
 
-On MML-02 the firmware comes up with the relay and MOSFET outputs unloaded, and each channel gets exercised one at a time before anything real is wired to it. On MML-01, ESPHome goes on only after the I2C scan has already named both sensors.
+On PCB 2 the firmware comes up with the relay and MOSFET outputs unloaded, and each channel gets exercised one at a time before anything real is wired to it. On PCB 1, ESPHome goes on only after the I2C scan has already named both sensors.
 
 ## What makes this fast
 

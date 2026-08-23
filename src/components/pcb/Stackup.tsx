@@ -109,7 +109,7 @@ export function Stackup({ layers, note }: { layers: StackLayer[]; note?: string 
   );
 }
 
-/** MML-01 — 4-layer on the fab's 7628 stackup, both inner layers solid ground */
+/** PCB 1 — 4-layer on the fab's 7628 stackup, both inner layers solid ground */
 export const STACK_4L: StackLayer[] = [
   { name: "F.Mask", role: "Soldermask", thickness: "—", kind: "mask" },
   { name: "F.Cu", role: "Signal + pours", thickness: "1 oz", kind: "copper" },
@@ -122,7 +122,7 @@ export const STACK_4L: StackLayer[] = [
   { name: "B.Mask", role: "Soldermask + ID block", thickness: "—", kind: "mask" },
 ];
 
-/** MML-02 — 2-layer, 1 oz, bottom copper unbroken under logic + converter */
+/** PCB 2 — 2-layer, 1 oz, bottom copper unbroken under logic + converter */
 export const STACK_2L: StackLayer[] = [
   { name: "F.Mask", role: "Soldermask", thickness: "—", kind: "mask" },
   { name: "F.Cu", role: "Signal + field power", thickness: "1 oz", kind: "copper" },

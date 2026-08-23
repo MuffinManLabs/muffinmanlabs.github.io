@@ -47,6 +47,17 @@ export function getPostSlugs(): string[] {
   return getAllPosts().map((p) => p.slug);
 }
 
+/**
+ * The post's own OG card if `scripts/gen-post-og.cjs` has generated one,
+ * else the shared site card. Build-time only, like everything else here —
+ * the fallback means a new post is never blocked on running the script,
+ * it just previews as the homepage until someone does.
+ */
+export function postOgImage(slug: string): string {
+  const p = path.join(process.cwd(), "public", "og", `${slug}.png`);
+  return fs.existsSync(p) ? `/og/${slug}.png` : "/og.png";
+}
+
 /** Tags present in the corpus, ordered by post count (desc). */
 export function getAllTags(posts: PostMeta[]): { tag: string; count: number }[] {
   const counts = new Map<string, number>();
@@ -56,14 +67,4 @@ export function getAllTags(posts: PostMeta[]): { tag: string; count: number }[] 
     .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 }
 
-export function formatDate(iso: string): string {
-  if (!iso) return "";
-  const d = new Date(`${iso}T00:00:00Z`);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
+export { formatDate } from "./dates";

@@ -1,17 +1,19 @@
 import Reveal from "./Reveal";
 import GitHubMark from "./GitHubMark";
-import { REPO, REPO_TREE, REPO_HIGHLIGHTS } from "./pcbData";
+import { REPO, REPO_TREE, REPO_READS, REPO_HIGHLIGHTS } from "./pcbData";
 
 /* ════════════════════════════════════════════════════════════════════════
    Open source — the evidence section.
 
    Every other claim on this page asks to be believed. This one does not:
-   the whole MML-01 project is public, including the exact package that was
+   the whole PCB 1 project is public, including the exact package that was
    uploaded to the fab and the review records that caught things before it
    was. It is the single most persuasive thing on the site, so it gets a
-   section of its own rather than a link in the footer.
+   section of its own rather than a link in the footer — and the documents
+   a client can actually read in a browser are deep-linked one by one,
+   because "it's in there somewhere" persuades nobody.
 
-   Server-rendered: static prose and one outbound link.
+   Server-rendered: static prose and outbound links.
    ════════════════════════════════════════════════════════════════════════ */
 
 export default function OpenSource() {
@@ -24,7 +26,7 @@ export default function OpenSource() {
             The whole board, in public
           </h2>
           <p className="mt-4 max-w-[64ch] text-[16px] leading-8" style={{ color: "var(--text-2)" }}>
-            You do not have to take any of the above on trust. MML-01 is
+            You do not have to take any of the above on trust. PCB 1 is
             published in full &mdash; the KiCad project, the exact package that
             was uploaded to JLCPCB, the written design document, and the review
             records that caught two real problems before boards were built with
@@ -95,9 +97,56 @@ export default function OpenSource() {
               </ul>
             </div>
 
+            {/* ── read it in the browser — the ten-second version ──────── */}
+            <div className="px-6 sm:px-8 py-7" style={{ borderTop: "1px solid var(--border-soft)" }}>
+              {/* a real heading (styled by the eyebrow class, so visually
+                  identical) — heading navigation should land on the site's
+                  strongest evidence, not skip past it */}
+              <h3 className="eyebrow">Read it in the browser</h3>
+              <p
+                className="mt-3 text-[13.5px] leading-7 max-w-[70ch] m-0"
+                style={{ color: "var(--text-2)" }}
+              >
+                No KiCad install, no download &mdash; each opens as a page and
+                takes about ten seconds to judge. The first two are the reviews
+                this board passed through before it was ordered; a review from
+                me arrives in the same shape &mdash; findings, severities, and
+                what to do about each.
+              </p>
+
+              <ul className="mt-4 grid sm:grid-cols-2 gap-x-8 m-0 p-0 list-none">
+                {REPO_READS.map((r) => (
+                  <li
+                    key={r.path}
+                    className="py-3"
+                    style={{ borderTop: "1px solid var(--border-soft)" }}
+                  >
+                    <a
+                      href={`${REPO.url}/${r.path}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="link-quiet inline-flex items-center gap-2 text-[13.5px] font-medium leading-6"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      {r.label}
+                      <span aria-hidden style={{ color: "var(--text-3)" }}>
+                        &rarr;
+                      </span>
+                    </a>
+                    <span
+                      className="block text-[12.5px] leading-5"
+                      style={{ color: "var(--text-3)" }}
+                    >
+                      {r.note}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
             {/* ── the paperwork, which is the actual differentiator ────── */}
             <div className="px-6 sm:px-8 py-7" style={{ borderTop: "1px solid var(--border-soft)" }}>
-              <span className="eyebrow">Also in there</span>
+              <h3 className="eyebrow">Also in there</h3>
               <ul className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 m-0 p-0 list-none">
                 {REPO_HIGHLIGHTS.map((h) => (
                   <li
