@@ -10,8 +10,8 @@ const C = {
   sram:   { bg:"#1a3c2a", border:"#2d8c4e", text:"#7ee8a8", hover:"#1e4c34", tint:"#1a3c2a15" },
   periph_hdr: { bg:"#4a2a1a", border:"#c46830", text:"#f4a870", hover:"#5a3420", tint:"#4a2a1a12" },
   ppb_hdr:{ bg:"#321a4a", border:"#7640b0", text:"#c49cf0", hover:"#3e2260", tint:"#321a4a15" },
-  gray:   { bg:"#2a2a2e", border:"#555560", text:"#9090a0", hover:"#333338", tint:"#2a2a2e10" },
-  dim:    { bg:"#1e1e22", border:"#333340", text:"#606070", hover:"#1e1e22", tint:"transparent" },
+  gray:   { bg:"#232019", border:"#4a443b", text:"#8c8372", hover:"#2b2721", tint:"#23201910" },
+  dim:    { bg:"#191714", border:"#2e2a25", text:"#6e6658", hover:"#191714", tint:"transparent" },
   // Flash / code internals
   flash:  { bg:"#152e4a", border:"#2564a0", text:"#74a8e0", hover:"#1a3652", tint:"#152e4a15" },
   vt:     { bg:"#2e1846", border:"#6a38a4", text:"#b88ae8", hover:"#381e54", tint:"#2e184615" },
@@ -43,7 +43,7 @@ const C = {
   ppb:    { bg:"#2a1440", border:"#6434a0", text:"#b484e4", hover:"#341a4e", tint:"#2a144015" },
   scs:    { bg:"#3e1616", border:"#b02828", text:"#ec6c6c", hover:"#4a1c1c", tint:"#3e161615" },
   // Register row
-  reg:    { bg:"#1a1a24", border:"#3a3a50", text:"#a8a8c0", hover:"#222230", tint:"#1a1a2410" },
+  reg:    { bg:"#1a1815", border:"#3a352e", text:"#aca395", hover:"#24211d", tint:"#1a181510" },
 };
 
 const BUS_C = { "ICode + DCode":"#5588cc","System bus":"#cc8855",PPB:"#9966cc","D-bus":"#66aa66",AHB1:"#cc6666",AHB2:"#cc9966",APB1:"#6699cc",APB2:"#cc66aa" };
@@ -739,14 +739,14 @@ function busName(a) {
    SMALL COMPONENTS
    ══════════════════════════════════════════════════════════════════════════ */
 function BusBadge({bus,small}) {
-  if(!bus) return null; const bc=BUS_C[bus]||"#888";
+  if(!bus) return null; const bc=BUS_C[bus]||"#8c8372";
   return <span style={{display:"inline-block",padding:small?"0 4px":"1px 6px",borderRadius:3,fontSize:small?9:10,fontWeight:600,background:bc+"22",color:bc,border:`1px solid ${bc}38`,marginLeft:4,letterSpacing:0.3,whiteSpace:"nowrap",lineHeight:small?"15px":"17px"}}>{bus}</span>;
 }
 function XNBadge() { return <span style={{display:"inline-block",padding:"1px 5px",borderRadius:3,fontSize:9,fontWeight:700,background:"#cc333320",color:"#ff6666",border:"1px solid #cc333338",marginLeft:4,letterSpacing:0.6,lineHeight:"17px"}}>XN</span>; }
 function DiscBadge({text}) { return <span title={text} style={{display:"inline-block",padding:"1px 5px",borderRadius:3,fontSize:9,fontWeight:700,background:"#22884422",color:"#44cc66",border:"1px solid #22884438",marginLeft:4,letterSpacing:0.4,lineHeight:"17px",cursor:"help"}}>DISC</span>; }
-function ClockTag({clock}) { if(!clock) return null; return <span style={{display:"inline-block",padding:"0 5px",borderRadius:3,fontSize:8.5,fontWeight:600,background:"#ffffff0a",color:"#888898",border:"1px solid #ffffff10",marginLeft:4,letterSpacing:0.2,lineHeight:"16px",fontFamily:"'JetBrains Mono',monospace"}}>🔑 {clock}</span>; }
+function ClockTag({clock}) { if(!clock) return null; return <span style={{display:"inline-block",padding:"0 5px",borderRadius:3,fontSize:8.5,fontWeight:600,background:"#ffffff0a",color:"#8c8372",border:"1px solid #ffffff10",marginLeft:4,letterSpacing:0.2,lineHeight:"16px",fontFamily:"var(--font-geist-mono),ui-monospace,monospace"}}>🔑 {clock}</span>; }
 function Chevron({open,color}) { return <span style={{display:"inline-block",transition:"transform 200ms ease",transform:open?"rotate(90deg)":"rotate(0deg)",fontSize:10,color:color||"#ffffff45",marginRight:5,flexShrink:0,width:12,textAlign:"center"}}>▶</span>; }
-function StarBtn({active,onClick}) { return <span onClick={e=>{e.stopPropagation();onClick();}} style={{cursor:"pointer",fontSize:13,color:active?"#f0c030":"#444458",marginLeft:5,transition:"color 150ms",lineHeight:1}} title={active?"Remove bookmark":"Bookmark"}>{active?"★":"☆"}</span>; }
+function StarBtn({active,onClick}) { return <span onClick={e=>{e.stopPropagation();onClick();}} style={{cursor:"pointer",fontSize:13,color:active?"#dba64b":"#4f483e",marginLeft:5,transition:"color 150ms",lineHeight:1}} title={active?"Remove bookmark":"Bookmark"}>{active?"★":"☆"}</span>; }
 
 /* ══════════════════════════════════════════════════════════════════════════
    HOVER TOOLTIP
@@ -757,9 +757,9 @@ function Tooltip({block,anchorEl}) {
   if(!names.length) return null;
   const r=anchorEl.getBoundingClientRect();
   const left=Math.min(Math.max(r.left+r.width/2-100,8),window.innerWidth-230);
-  return <div style={{position:"fixed",left,top:r.top-8,transform:"translateY(-100%)",zIndex:9999,background:"#1a1a2a",border:"1px solid #38384e",borderRadius:7,padding:"9px 12px",boxShadow:"0 8px 30px rgba(0,0,0,0.65)",minWidth:130,maxWidth:220,pointerEvents:"none"}}>
-    <div style={{fontSize:9,fontWeight:700,color:"#555572",marginBottom:4,letterSpacing:0.8}}>CONTAINS</div>
-    {names.map((n,i)=><div key={i} style={{fontSize:11,color:"#bbbbd4",padding:"1px 0",borderBottom:i<names.length-1?"1px solid #24243a":"none"}}>{n}</div>)}
+  return <div style={{position:"fixed",left,top:r.top-8,transform:"translateY(-100%)",zIndex:9999,background:"#1c1a17",border:"1px solid #3a352e",borderRadius:7,padding:"9px 12px",boxShadow:"0 8px 30px rgba(0,0,0,0.65)",minWidth:130,maxWidth:220,pointerEvents:"none"}}>
+    <div style={{fontSize:9,fontWeight:700,color:"#635c4f",marginBottom:4,letterSpacing:0.8}}>CONTAINS</div>
+    {names.map((n,i)=><div key={i} style={{fontSize:11,color:"#c9c0b0",padding:"1px 0",borderBottom:i<names.length-1?"1px solid #2a2620":"none"}}>{n}</div>)}
   </div>;
 }
 
@@ -792,17 +792,17 @@ const CLOCK_PATHS = {
 function ClockPath({busGroup}) {
   const steps = CLOCK_PATHS[busGroup];
   if (!steps) return null;
-  return <div style={{padding:"6px 10px",margin:"2px 0 4px",background:"#12121a",borderRadius:5,border:"1px solid #2a2a3e"}}>
+  return <div style={{padding:"6px 10px",margin:"2px 0 4px",background:"#151412",borderRadius:5,border:"1px solid #2e2a25"}}>
     <div style={{display:"flex",alignItems:"center",gap:0,flexWrap:"wrap",marginBottom:4}}>
       {steps.map((s,i)=><span key={i} style={{display:"flex",alignItems:"center"}}>
         <span style={{display:"inline-flex",flexDirection:"column",alignItems:"center",padding:"3px 8px",borderRadius:4,background:s.color+"18",border:`1px solid ${s.color}30`}}>
           <span style={{fontSize:10,fontWeight:700,color:s.color,letterSpacing:0.3,lineHeight:1.2}}>{s.label}</span>
-          {s.freq&&<span style={{fontSize:9,color:s.color+"bb",fontFamily:"'JetBrains Mono',monospace",lineHeight:1.2}}>{s.freq}</span>}
+          {s.freq&&<span style={{fontSize:9,color:s.color+"bb",fontFamily:"var(--font-geist-mono),ui-monospace,monospace",lineHeight:1.2}}>{s.freq}</span>}
         </span>
-        {i<steps.length-1&&<span style={{color:"#444460",fontSize:12,margin:"0 3px",flexShrink:0}}>→</span>}
+        {i<steps.length-1&&<span style={{color:"#4f483e",fontSize:12,margin:"0 3px",flexShrink:0}}>→</span>}
       </span>)}
     </div>
-    <div style={{fontSize:9,color:"#555570",fontStyle:"italic"}}>Default clock path assuming PLL configured for 168 MHz. Before PLL setup, everything runs on HSI at 16 MHz.</div>
+    <div style={{fontSize:9,color:"#635c4f",fontStyle:"italic"}}>Default clock path assuming PLL configured for 168 MHz. Before PLL setup, everything runs on HSI at 16 MHz.</div>
   </div>;
 }
 
@@ -814,11 +814,11 @@ function RegisterList({registers,baseAddr}) {
     {registers.map((r,i)=>{
       const fullAddr = baseAddr !== undefined ? baseAddr + r.off : null;
       return <div key={i} style={{display:"flex",alignItems:"flex-start",padding:"4px 10px",marginBottom:2,background:C.reg.bg,border:`1px solid ${C.reg.border}`,borderRadius:4,fontSize:11,gap:8}}>
-        <span style={{fontFamily:"'JetBrains Mono',monospace",color:"#a0a0c0",minWidth:60,fontWeight:600}}>{r.name}</span>
-        <span style={{fontFamily:"'JetBrains Mono',monospace",color:"#666680",minWidth:fullAddr?190:60,fontSize:10}}>
+        <span style={{fontFamily:"var(--font-geist-mono),ui-monospace,monospace",color:"#aca395",minWidth:60,fontWeight:600}}>{r.name}</span>
+        <span style={{fontFamily:"var(--font-geist-mono),ui-monospace,monospace",color:"#756d5e",minWidth:fullAddr?190:60,fontSize:10}}>
           {fullAddr !== null ? `${hex(baseAddr)} + ${hex4(r.off)} = ${hex(fullAddr)}` : `+${hex4(r.off)}`}
         </span>
-        <span style={{color:"#808098",flex:1}}>{r.desc}</span>
+        <span style={{color:"#8c8372",flex:1}}>{r.desc}</span>
       </div>;
     })}
   </div>;
@@ -843,18 +843,18 @@ function BitBandCalc({type}) {
     else result = baseAlias + ((addr-baseRegion)*32) + (bit*4);
   }
 
-  return <div style={{padding:"8px 10px",background:"#12121a",borderRadius:5,border:"1px solid #2a2a3e",margin:"4px 0"}}>
-    <div style={{fontSize:10,fontWeight:700,color:"#606078",marginBottom:6,letterSpacing:0.8}}>{type==="sram"?"SRAM":"PERIPHERAL"} BIT-BAND CALCULATOR</div>
+  return <div style={{padding:"8px 10px",background:"#151412",borderRadius:5,border:"1px solid #2e2a25",margin:"4px 0"}}>
+    <div style={{fontSize:10,fontWeight:700,color:"#6e6658",marginBottom:6,letterSpacing:0.8}}>{type==="sram"?"SRAM":"PERIPHERAL"} BIT-BAND CALCULATOR</div>
     <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-      <label style={{fontSize:10,color:"#8888a0"}}>Byte addr:
-        <input value={byteAddr} onChange={e=>setByteAddr(e.target.value)} placeholder={hex(baseRegion)} style={{marginLeft:4,width:100,background:"#1a1a28",border:"1px solid #333348",borderRadius:3,padding:"3px 6px",color:"#c0c0d8",fontSize:11,fontFamily:"'JetBrains Mono',monospace",outline:"none"}} />
+      <label style={{fontSize:10,color:"#8c8372"}}>Byte addr:
+        <input value={byteAddr} onChange={e=>setByteAddr(e.target.value)} placeholder={hex(baseRegion)} style={{marginLeft:4,width:100,background:"#1c1a17",border:"1px solid #3a352e",borderRadius:3,padding:"3px 6px",color:"#d8d0c2",fontSize:11,fontFamily:"var(--font-geist-mono),ui-monospace,monospace",outline:"none"}} />
       </label>
-      <label style={{fontSize:10,color:"#8888a0"}}>Bit (0–7):
-        <input value={bitNum} onChange={e=>setBitNum(e.target.value)} placeholder="0" style={{marginLeft:4,width:36,background:"#1a1a28",border:"1px solid #333348",borderRadius:3,padding:"3px 6px",color:"#c0c0d8",fontSize:11,fontFamily:"'JetBrains Mono',monospace",outline:"none"}} />
+      <label style={{fontSize:10,color:"#8c8372"}}>Bit (0–7):
+        <input value={bitNum} onChange={e=>setBitNum(e.target.value)} placeholder="0" style={{marginLeft:4,width:36,background:"#1c1a17",border:"1px solid #3a352e",borderRadius:3,padding:"3px 6px",color:"#d8d0c2",fontSize:11,fontFamily:"var(--font-geist-mono),ui-monospace,monospace",outline:"none"}} />
       </label>
     </div>
     {error && <div style={{fontSize:10,color:"#f07070",marginTop:4}}>{error}</div>}
-    {result!==null && <div style={{marginTop:6,fontSize:11,color:"#a0e0b0",fontFamily:"'JetBrains Mono',monospace"}}>
+    {result!==null && <div style={{marginTop:6,fontSize:11,color:"#a0e0b0",fontFamily:"var(--font-geist-mono),ui-monospace,monospace"}}>
       Alias address: <strong>{hex(result)}</strong>
       <div style={{fontSize:10,color:"#708878",marginTop:2}}>Write 1 to set bit, 0 to clear. Single atomic STR instruction.</div>
     </div>}
@@ -912,8 +912,8 @@ function BaudRateCalc() {
     result = { usartdiv, mantissa, fraction, brrValue, actualBaud, errorPct };
   }
 
-  const iStyle = {background:"#1a1a28",border:"1px solid #333348",borderRadius:3,padding:"3px 6px",color:"#c0c0d8",fontSize:11,fontFamily:"'JetBrains Mono',monospace",outline:"none"};
-  const selStyle = {background:"#1a1a28",border:"1px solid #333348",borderRadius:3,padding:"3px 6px",color:"#c0c0d8",fontSize:11,outline:"none"};
+  const iStyle = {background:"#1c1a17",border:"1px solid #3a352e",borderRadius:3,padding:"3px 6px",color:"#d8d0c2",fontSize:11,fontFamily:"var(--font-geist-mono),ui-monospace,monospace",outline:"none"};
+  const selStyle = {background:"#1c1a17",border:"1px solid #3a352e",borderRadius:3,padding:"3px 6px",color:"#d8d0c2",fontSize:11,outline:"none"};
 
   const presetClocks = [
     { label:"16 MHz (HSI, no PLL)", mhz:16 },
@@ -921,16 +921,16 @@ function BaudRateCalc() {
   ];
 
   return <div>
-    <div style={{fontSize:10,fontWeight:700,color:"#606078",marginBottom:8,letterSpacing:0.8}}>USART BAUD RATE CALCULATOR</div>
+    <div style={{fontSize:10,fontWeight:700,color:"#6e6658",marginBottom:8,letterSpacing:0.8}}>USART BAUD RATE CALCULATOR</div>
 
     {/* Row 1: USART select + OVER8 */}
     <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap",marginBottom:8}}>
-      <label style={{fontSize:10,color:"#8888a0"}}>USART:
+      <label style={{fontSize:10,color:"#8c8372"}}>USART:
         <select value={usart} onChange={e=>{setUsart(e.target.value);setCustomClk("")}} style={{...selStyle,marginLeft:4}}>
           {Object.entries(USART_CLOCKS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
         </select>
       </label>
-      <label style={{fontSize:10,color:"#8888a0",display:"flex",alignItems:"center",gap:4}}>
+      <label style={{fontSize:10,color:"#8c8372",display:"flex",alignItems:"center",gap:4}}>
         <input type="checkbox" checked={over8} onChange={e=>setOver8(e.target.checked)} style={{margin:0}} />
         OVER8 (8x oversampling)
       </label>
@@ -938,29 +938,29 @@ function BaudRateCalc() {
 
     {/* Row 2: Clock frequency — presets + custom */}
     <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:8}}>
-      <span style={{fontSize:10,color:"#8888a0"}}>fck:</span>
+      <span style={{fontSize:10,color:"#8c8372"}}>fck:</span>
       {presetClocks.map(p=><button key={p.mhz} onClick={()=>setCustomClk(String(p.mhz))} style={{
-        background: useCustom && Math.abs(customHz/1e6-p.mhz)<0.01 ? "#252540" : !useCustom && Math.abs(fck/1e6-p.mhz)<0.01 ? "#252540" : "#16161e",
-        border:`1px solid ${useCustom && Math.abs(customHz/1e6-p.mhz)<0.01 ? "#4466aa" : !useCustom && Math.abs(fck/1e6-p.mhz)<0.01 ? "#4466aa" : "#2a2a3e"}`,
-        borderRadius:3,padding:"2px 8px",fontSize:10,color:useCustom && Math.abs(customHz/1e6-p.mhz)<0.01?"#a0b8e0":"#8080a0",cursor:"pointer",
+        background: useCustom && Math.abs(customHz/1e6-p.mhz)<0.01 ? "#332a1b" : !useCustom && Math.abs(fck/1e6-p.mhz)<0.01 ? "#332a1b" : "#1c1a17",
+        border:`1px solid ${useCustom && Math.abs(customHz/1e6-p.mhz)<0.01 ? "#8a6a2e" : !useCustom && Math.abs(fck/1e6-p.mhz)<0.01 ? "#8a6a2e" : "#2e2a25"}`,
+        borderRadius:3,padding:"2px 8px",fontSize:10,color:useCustom && Math.abs(customHz/1e6-p.mhz)<0.01?"#dba64b":"#8c8372",cursor:"pointer",
       }}>{p.label}</button>)}
-      <label style={{fontSize:10,color:"#8888a0"}}>Custom MHz:
+      <label style={{fontSize:10,color:"#8c8372"}}>Custom MHz:
         <input value={customClk} onChange={e=>setCustomClk(e.target.value)} placeholder={String(cfg?cfg.fck/1e6:42)} style={{...iStyle,marginLeft:4,width:56}} />
       </label>
     </div>
 
     {/* Row 3: Baud rate input + quick picks */}
     <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:8}}>
-      <label style={{fontSize:10,color:"#8888a0"}}>Baud rate:
+      <label style={{fontSize:10,color:"#8c8372"}}>Baud rate:
         <input value={baudInput} onChange={e=>setBaudInput(e.target.value)} placeholder="115200" style={{...iStyle,marginLeft:4,width:90}} />
       </label>
       <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
         {COMMON_BAUDS.map(b=><button key={b} onClick={()=>setBaudInput(String(b))} style={{
-          background:String(b)===baudInput?"#252540":"#16161e",
-          border:`1px solid ${String(b)===baudInput?"#4466aa":"#2a2a3e"}`,
+          background:String(b)===baudInput?"#332a1b":"#1c1a17",
+          border:`1px solid ${String(b)===baudInput?"#8a6a2e":"#2e2a25"}`,
           borderRadius:3,padding:"2px 6px",fontSize:9,
-          color:String(b)===baudInput?"#a0b8e0":"#606078",
-          cursor:"pointer",fontFamily:"'JetBrains Mono',monospace",
+          color:String(b)===baudInput?"#dba64b":"#6e6658",
+          cursor:"pointer",fontFamily:"var(--font-geist-mono),ui-monospace,monospace",
         }}>{b>=1000?`${b/1000}k`:b}</button>)}
       </div>
     </div>
@@ -974,40 +974,40 @@ function BaudRateCalc() {
     </div>
 
     {/* Results */}
-    {result && <div style={{background:"#1a1a24",borderRadius:5,padding:"10px 12px",border:"1px solid #28283a"}}>
+    {result && <div style={{background:"#1a1815",borderRadius:5,padding:"10px 12px",border:"1px solid #2e2a25"}}>
       {/* Formula */}
-      <div style={{fontSize:10,color:"#707090",marginBottom:6,fontFamily:"'JetBrains Mono',monospace"}}>
+      <div style={{fontSize:10,color:"#857c6c",marginBottom:6,fontFamily:"var(--font-geist-mono),ui-monospace,monospace"}}>
         USARTDIV = {(fck/1e6).toFixed(fck%1e6===0?0:2)} MHz / ({over8?"8":"16"} × {baud}) = <span style={{color:"#e0d870"}}>{result.usartdiv.toFixed(4)}</span>
       </div>
 
       {/* BRR breakdown */}
       <div style={{display:"flex",gap:16,flexWrap:"wrap",marginBottom:6}}>
         <div style={{fontSize:11}}>
-          <span style={{color:"#707090"}}>Mantissa:</span>{" "}
-          <span style={{color:"#d0d0e8",fontFamily:"'JetBrains Mono',monospace",fontWeight:600}}>{result.mantissa} (0x{result.mantissa.toString(16).toUpperCase()})</span>
+          <span style={{color:"#857c6c"}}>Mantissa:</span>{" "}
+          <span style={{color:"#e6dfd2",fontFamily:"var(--font-geist-mono),ui-monospace,monospace",fontWeight:600}}>{result.mantissa} (0x{result.mantissa.toString(16).toUpperCase()})</span>
         </div>
         <div style={{fontSize:11}}>
-          <span style={{color:"#707090"}}>Fraction:</span>{" "}
-          <span style={{color:"#d0d0e8",fontFamily:"'JetBrains Mono',monospace",fontWeight:600}}>{result.fraction}/{over8?"8":"16"}</span>
+          <span style={{color:"#857c6c"}}>Fraction:</span>{" "}
+          <span style={{color:"#e6dfd2",fontFamily:"var(--font-geist-mono),ui-monospace,monospace",fontWeight:600}}>{result.fraction}/{over8?"8":"16"}</span>
         </div>
       </div>
 
       {/* BRR value */}
       <div style={{fontSize:12,marginBottom:6}}>
-        <span style={{color:"#707090"}}>BRR =</span>{" "}
-        <span style={{color:"#70d898",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:14}}>0x{result.brrValue.toString(16).toUpperCase().padStart(4,"0")}</span>
-        <span style={{color:"#555570",fontSize:10,marginLeft:8}}>({result.brrValue} decimal)</span>
+        <span style={{color:"#857c6c"}}>BRR =</span>{" "}
+        <span style={{color:"#70d898",fontFamily:"var(--font-geist-mono),ui-monospace,monospace",fontWeight:700,fontSize:14}}>0x{result.brrValue.toString(16).toUpperCase().padStart(4,"0")}</span>
+        <span style={{color:"#635c4f",fontSize:10,marginLeft:8}}>({result.brrValue} decimal)</span>
       </div>
 
       {/* Actual baud + error */}
       <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
         <div style={{fontSize:11}}>
-          <span style={{color:"#707090"}}>Actual baud:</span>{" "}
-          <span style={{color:"#d0d0e8",fontFamily:"'JetBrains Mono',monospace"}}>{result.actualBaud.toFixed(2)}</span>
+          <span style={{color:"#857c6c"}}>Actual baud:</span>{" "}
+          <span style={{color:"#e6dfd2",fontFamily:"var(--font-geist-mono),ui-monospace,monospace"}}>{result.actualBaud.toFixed(2)}</span>
         </div>
         <div style={{fontSize:11}}>
-          <span style={{color:"#707090"}}>Error:</span>{" "}
-          <span style={{color:Math.abs(result.errorPct)<1?"#70d898":Math.abs(result.errorPct)<2?"#e0d870":"#f07070",fontFamily:"'JetBrains Mono',monospace",fontWeight:600}}>
+          <span style={{color:"#857c6c"}}>Error:</span>{" "}
+          <span style={{color:Math.abs(result.errorPct)<1?"#70d898":Math.abs(result.errorPct)<2?"#e0d870":"#f07070",fontFamily:"var(--font-geist-mono),ui-monospace,monospace",fontWeight:600}}>
             {result.errorPct>=0?"+":""}{result.errorPct.toFixed(3)}%
           </span>
           {Math.abs(result.errorPct)<1&&<span style={{color:"#506850",fontSize:9,marginLeft:4}}>✓ good</span>}
@@ -1058,31 +1058,31 @@ function MemBlock({block,depth,isOpen,onToggle,highlighted,bookmarked,onBookmark
     <div id={`block-${block.id}`} ref={elRef} onClick={expandable?onToggle:undefined} onMouseEnter={onEnter} onMouseLeave={onLeave} style={{
       display:"flex",alignItems:isDim?"center":"flex-start",
       background:isOpen?col.bg:hov&&expandable?col.hover:col.bg+(isDim?"":"cc"),
-      border:highlighted?`2px solid #e0b030`:`1px solid ${isOpen?col.border:isDim?col.border+"50":col.border+"aa"}`,
+      border:highlighted?`2px solid #dba64b`:`1px solid ${isOpen?col.border:isDim?col.border+"50":col.border+"aa"}`,
       borderRadius:5,padding:`${vPad}px 12px`,marginBottom:3,
       cursor:expandable?"pointer":"default",
       transition:"all 180ms ease",opacity:isDim?0.4:1,
       minHeight:isDim?20:Math.max(28,44-depth*4),
       transform:hov&&expandable&&!isOpen?"translateX(2px)":"none",position:"relative",
-      boxShadow:highlighted?"0 0 12px #e0b03030":"none",
+      boxShadow:highlighted?"0 0 12px #dba64b30":"none",
     }}>
       {expandable&&<div style={{position:"absolute",left:0,top:0,bottom:0,width:3,background:col.border,opacity:isOpen?0.9:hov?0.7:0.25,transition:"opacity 180ms ease",borderRadius:"5px 0 0 5px"}}/>}
       {expandable&&<Chevron open={isOpen} color={col.text+"88"}/>}
-      <div style={{width:isDim?"auto":addrW,minWidth:isDim?0:addrW*0.8,flexShrink:0,fontFamily:"'JetBrains Mono',monospace",fontSize:isDim?9.5:Math.max(10,11.5-depth*0.3),color:isDim?col.text:col.text+"bb",lineHeight:1.4,paddingLeft:expandable?0:18}}>{block.addr}</div>
+      <div style={{width:isDim?"auto":addrW,minWidth:isDim?0:addrW*0.8,flexShrink:0,fontFamily:"var(--font-geist-mono),ui-monospace,monospace",fontSize:isDim?9.5:Math.max(10,11.5-depth*0.3),color:isDim?col.text:col.text+"bb",lineHeight:1.4,paddingLeft:expandable?0:18}}>{block.addr}</div>
       <div style={{flex:1,minWidth:0,paddingRight:6}}>
         <div style={{display:"flex",alignItems:"center",flexWrap:"wrap",gap:2}}>
-          <span style={{fontSize:nfs,fontWeight:isDim?400:600,color:isDim?col.text:isOpen?"#ffffff":"#e2e2ee",letterSpacing:0.2}}>{block.name}</span>
+          <span style={{fontSize:nfs,fontWeight:isDim?400:600,color:isDim?col.text:isOpen?"#ffffff":"#f4efe6",letterSpacing:0.2}}>{block.name}</span>
           {block.bus&&<BusBadge bus={block.bus} small={depth>1}/>}
           {block.xn&&<XNBadge/>}
           {block.disc&&<DiscBadge text={block.disc}/>}
           {block.disc_usart2&&<DiscBadge text={block.disc_usart2}/>}
           {!isDim&&onBookmark&&<StarBtn active={bookmarked} onClick={onBookmark}/>}
         </div>
-        {block.desc&&!isDim&&<div style={{fontSize:Math.max(10.5,11.5-depth*0.3),color:"#8c8caa",marginTop:2,lineHeight:1.5}}>{block.desc}</div>}
+        {block.desc&&!isDim&&<div style={{fontSize:Math.max(10.5,11.5-depth*0.3),color:"#9c9385",marginTop:2,lineHeight:1.5}}>{block.desc}</div>}
         {block.clock&&!isDim&&<ClockTag clock={block.clock}/>}
         {block.disc&&!isDim&&<div style={{fontSize:10,color:"#44cc66",marginTop:1,opacity:0.8}}>{block.disc}</div>}
       </div>
-      <div style={{flexShrink:0,fontSize:isDim?9:Math.max(10,11.5-depth*0.3),fontWeight:500,color:col.text,textAlign:"right",minWidth:44,fontFamily:"'JetBrains Mono',monospace"}}>{block.size||""}</div>
+      <div style={{flexShrink:0,fontSize:isDim?9:Math.max(10,11.5-depth*0.3),fontWeight:500,color:col.text,textAlign:"right",minWidth:44,fontFamily:"var(--font-geist-mono),ui-monospace,monospace"}}>{block.size||""}</div>
     </div>
     {showTip&&elRef.current&&<Tooltip block={block} anchorEl={elRef.current}/>}
   </>;
@@ -1096,7 +1096,7 @@ function BlockTree({groupKey,depth,expanded,onToggle,matches,bookmarks,onBookmar
   // Determine bus group for clock path display
   const busGroup = (groupKey==="ahb1"||groupKey==="apb1"||groupKey==="apb2") ? groupKey : null;
   return <div>
-    {NOTES[groupKey]&&<div style={{fontSize:Math.max(10.5,11.5-depth*0.3),color:"#6a6a8a",lineHeight:1.5,padding:"4px 10px",marginBottom:5,borderLeft:"3px solid #2a2a4048",maxWidth:640}}>{NOTES[groupKey]}</div>}
+    {NOTES[groupKey]&&<div style={{fontSize:Math.max(10.5,11.5-depth*0.3),color:"#7d7466",lineHeight:1.5,padding:"4px 10px",marginBottom:5,borderLeft:"3px solid #2e2a2548",maxWidth:640}}>{NOTES[groupKey]}</div>}
     {blocks.map(b=>{
       const isOpen=expanded.has(b.id);
       const hl=matches.has(b.id);
@@ -1121,8 +1121,8 @@ function BlockTree({groupKey,depth,expanded,onToggle,matches,bookmarks,onBookmar
    ══════════════════════════════════════════════════════════════════════════ */
 function Minimap({expanded,onJump}) {
   const heights=[48,48,48,26,26,16,16];
-  return <div style={{width:42,flexShrink:0,background:"#0e0e14",borderLeft:"1px solid #1c1c2a",display:"flex",flexDirection:"column",padding:"10px 3px",gap:2,alignItems:"center"}}>
-    <div style={{fontSize:7,fontWeight:800,color:"#3e3e54",letterSpacing:1.2,marginBottom:4}}>MAP</div>
+  return <div style={{width:42,flexShrink:0,background:"#0d0c0b",borderLeft:"1px solid #24211d",display:"flex",flexDirection:"column",padding:"10px 3px",gap:2,alignItems:"center"}}>
+    <div style={{fontSize:7,fontWeight:800,color:"#4a443b",letterSpacing:1.2,marginBottom:4}}>MAP</div>
     {DATA.root.map((b,i)=>{const col=C[b.color]||C.gray;const isOpen=expanded.has(b.id);const has=!!b.children;
       return <div key={b.id} onClick={has?()=>onJump(b.id):undefined} title={b.name} style={{width:26,height:heights[i],borderRadius:3,background:col.bg,border:isOpen?`2px solid ${col.text}`:`1px solid ${col.border}40`,cursor:has?"pointer":"default",opacity:has?(isOpen?1:0.45):0.18,transition:"all 220ms ease",boxShadow:isOpen?`0 0 10px ${col.border}50`:"none",display:"flex",alignItems:"center",justifyContent:"center"}}>
         <span style={{fontSize:6.5,fontWeight:800,color:col.text,opacity:isOpen?1:0.5,userSelect:"none",textAlign:"center",lineHeight:1}}>{b.name.split(/[\s(]/)[0].slice(0,4).toUpperCase()}</span>
@@ -1138,9 +1138,9 @@ function ToolBar({bookmarks,onBookmarkJump,allBlocks}) {
   const toggle=(name)=>setOpenTool(prev=>prev===name?null:name);
   const bmCount=bookmarks.size;
 
-  return <div style={{position:"fixed",bottom:0,left:0,right:42,zIndex:100,display:"flex",flexDirection:"column",alignItems:"stretch",pointerEvents:"none"}}>
+  return <div style={{position:"absolute",bottom:0,left:0,right:42,zIndex:20,display:"flex",flexDirection:"column",alignItems:"stretch",pointerEvents:"none"}}>
     {/* Panel */}
-    {openTool&&<div style={{pointerEvents:"auto",margin:"0 12px",marginBottom:0,background:"#14141e",border:"1px solid #2e2e44",borderBottom:"none",borderRadius:"8px 8px 0 0",padding:"14px 16px",boxShadow:"0 -4px 24px rgba(0,0,0,0.5)",maxHeight:340,overflowY:"auto"}}>
+    {openTool&&<div style={{pointerEvents:"auto",margin:"0 12px",marginBottom:0,background:"#171614",border:"1px solid #2e2a25",borderBottom:"none",borderRadius:"8px 8px 0 0",padding:"14px 16px",boxShadow:"0 -4px 24px rgba(0,0,0,0.5)",maxHeight:340,overflowY:"auto"}}>
       {openTool==="addr"&&<AddrCalcPanel/>}
       {openTool==="bb_sram"&&<BitBandCalc type="sram"/>}
       {openTool==="bb_periph"&&<BitBandCalc type="periph"/>}
@@ -1149,7 +1149,7 @@ function ToolBar({bookmarks,onBookmarkJump,allBlocks}) {
     </div>}
 
     {/* Button bar */}
-    <div style={{pointerEvents:"auto",display:"flex",gap:4,padding:"6px 12px",background:"#13131b",borderTop:"1px solid #222232",justifyContent:"center",flexWrap:"wrap"}}>
+    <div style={{pointerEvents:"auto",display:"flex",gap:4,padding:"6px 12px",background:"#161513",borderTop:"1px solid #24211d",justifyContent:"center",flexWrap:"wrap"}}>
       <ToolBtn icon="📍" label="Address Calc" active={openTool==="addr"} onClick={()=>toggle("addr")}/>
       <ToolBtn icon="🔀" label="SRAM Bit-Band" active={openTool==="bb_sram"} onClick={()=>toggle("bb_sram")}/>
       <ToolBtn icon="🔀" label="Periph Bit-Band" active={openTool==="bb_periph"} onClick={()=>toggle("bb_periph")}/>
@@ -1160,7 +1160,7 @@ function ToolBar({bookmarks,onBookmarkJump,allBlocks}) {
 }
 
 function ToolBtn({icon,label,active,onClick,highlight}) {
-  return <button onClick={onClick} style={{background:active?"#252540":"#1a1a2a",border:`1px solid ${active?"#4466aa":"#333348"}`,borderRadius:5,padding:"5px 12px",color:active?"#a0b8e0":highlight?"#f0c030":"#7878a0",fontSize:11,cursor:"pointer",fontWeight:600,display:"flex",alignItems:"center",gap:5,transition:"all 150ms"}}>
+  return <button onClick={onClick} style={{background:active?"#332a1b":"#1c1a17",border:`1px solid ${active?"#8a6a2e":"#3a352e"}`,borderRadius:5,padding:"5px 12px",color:active?"#dba64b":highlight?"#dba64b":"#8c8372",fontSize:11,cursor:"pointer",fontWeight:600,display:"flex",alignItems:"center",gap:5,transition:"all 150ms"}}>
     <span style={{fontSize:13}}>{icon}</span>{label}
   </button>;
 }
@@ -1172,19 +1172,19 @@ function AddrCalcPanel() {
   const info=valid?lookupAddress(addr):null;
 
   return <div>
-    <div style={{fontSize:10,fontWeight:700,color:"#606078",marginBottom:8,letterSpacing:0.8}}>ADDRESS CALCULATOR</div>
-    <input value={input} onChange={e=>setInput(e.target.value)} placeholder="Type any hex address, e.g. 0x40020C14" style={{width:"100%",boxSizing:"border-box",background:"#1a1a28",border:"1px solid #333348",borderRadius:4,padding:"7px 10px",color:"#d0d0e0",fontSize:12,fontFamily:"'JetBrains Mono',monospace",outline:"none",marginBottom:10}}/>
+    <div style={{fontSize:10,fontWeight:700,color:"#6e6658",marginBottom:8,letterSpacing:0.8}}>ADDRESS CALCULATOR</div>
+    <input value={input} onChange={e=>setInput(e.target.value)} placeholder="Type any hex address, e.g. 0x40020C14" style={{width:"100%",boxSizing:"border-box",background:"#1c1a17",border:"1px solid #3a352e",borderRadius:4,padding:"7px 10px",color:"#e6dfd2",fontSize:12,fontFamily:"var(--font-geist-mono),ui-monospace,monospace",outline:"none",marginBottom:10}}/>
     {info&&<div style={{fontSize:11.5,lineHeight:1.8}}>
-      <div><span style={{color:"#707088"}}>Region:</span> <span style={{color:"#d0d0e8"}}>{info.region}</span></div>
-      <div><span style={{color:"#707088"}}>Bus:</span> <span style={{color:BUS_C[info.bus]||"#aaa"}}>{info.bus}</span></div>
+      <div><span style={{color:"#857c6c"}}>Region:</span> <span style={{color:"#e6dfd2"}}>{info.region}</span></div>
+      <div><span style={{color:"#857c6c"}}>Bus:</span> <span style={{color:BUS_C[info.bus]||"#8c8372"}}>{info.bus}</span></div>
       {info.peripheral&&<>
-        <div><span style={{color:"#707088"}}>Peripheral:</span> <span style={{color:"#f0c860"}}>{info.peripheral}</span></div>
-        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"#a0a0b8",background:"#1a1a24",padding:"6px 10px",borderRadius:4,marginTop:4}}>{info.peripheral} + offset {hex4(info.offset)}{info.regName?<span style={{color:"#70d898"}}> = {info.regName}</span>:""}</div>
+        <div><span style={{color:"#857c6c"}}>Peripheral:</span> <span style={{color:"#f0c860"}}>{info.peripheral}</span></div>
+        <div style={{fontFamily:"var(--font-geist-mono),ui-monospace,monospace",fontSize:11,color:"#aca395",background:"#1a1815",padding:"6px 10px",borderRadius:4,marginTop:4}}>{info.peripheral} + offset {hex4(info.offset)}{info.regName?<span style={{color:"#70d898"}}> = {info.regName}</span>:""}</div>
       </>}
-      {!info.peripheral&&info.detail&&<div style={{fontSize:11.5,color:"#b8b8d0",background:"#1a1a24",padding:"8px 10px",borderRadius:4,marginTop:4,lineHeight:1.6}}>{info.detail}</div>}
-      {!info.peripheral&&!info.detail&&<div style={{color:"#606078",fontSize:10,marginTop:4}}>No specific info for this address</div>}
+      {!info.peripheral&&info.detail&&<div style={{fontSize:11.5,color:"#c9c0b0",background:"#1a1815",padding:"8px 10px",borderRadius:4,marginTop:4,lineHeight:1.6}}>{info.detail}</div>}
+      {!info.peripheral&&!info.detail&&<div style={{color:"#6e6658",fontSize:10,marginTop:4}}>No specific info for this address</div>}
     </div>}
-    {!valid&&input.length>0&&<div style={{fontSize:10,color:"#606078"}}>Enter a valid hex address (e.g. 0x40020C14)</div>}
+    {!valid&&input.length>0&&<div style={{fontSize:10,color:"#6e6658"}}>Enter a valid hex address (e.g. 0x40020C14)</div>}
   </div>;
 }
 
@@ -1197,12 +1197,12 @@ function BookmarkPanel({bookmarks,onJump,allBlocks}) {
     for(const id of bookmarks) { if(allBlocks[id]) list.push(allBlocks[id]); }
     return list;
   },[bookmarks,allBlocks]);
-  if(!items.length) return <div style={{fontSize:10,color:"#505068",padding:8}}>No bookmarks yet — click ☆ on any block</div>;
+  if(!items.length) return <div style={{fontSize:10,color:"#635c4f",padding:8}}>No bookmarks yet — click ☆ on any block</div>;
   return <div>
-    <div style={{fontSize:10,fontWeight:700,color:"#606078",marginBottom:8,letterSpacing:0.8}}>BOOKMARKS ({items.length})</div>
-    {items.map(b=><div key={b.id} onClick={()=>onJump(b.id)} style={{padding:"6px 10px",marginBottom:3,borderRadius:4,cursor:"pointer",fontSize:11,color:"#c0c0d8",background:"#1a1a24",border:"1px solid #28283a",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"background 150ms"}}>
+    <div style={{fontSize:10,fontWeight:700,color:"#6e6658",marginBottom:8,letterSpacing:0.8}}>BOOKMARKS ({items.length})</div>
+    {items.map(b=><div key={b.id} onClick={()=>onJump(b.id)} style={{padding:"6px 10px",marginBottom:3,borderRadius:4,cursor:"pointer",fontSize:11,color:"#d8d0c2",background:"#1a1815",border:"1px solid #2e2a25",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"background 150ms"}}>
       <span style={{fontWeight:600}}>{b.name}</span>
-      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#666680"}}>{(b.addr||"").split("–")[0]}</span>
+      <span style={{fontFamily:"var(--font-geist-mono),ui-monospace,monospace",fontSize:9,color:"#756d5e"}}>{(b.addr||"").split("–")[0]}</span>
     </div>)}
   </div>;
 }
@@ -1293,37 +1293,40 @@ export default function MemoryMapExplorer() {
     };
     walk("root",[]);
     setExpanded(prev=>{const n=new Set(prev);for(const a of ancestors) n.add(a);return n});
-    setTimeout(()=>{const el=document.getElementById(`block-${id}`);if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.style.boxShadow="0 0 20px #e0b03050";setTimeout(()=>{el.style.boxShadow=""},1500)}},80);
+    setTimeout(()=>{const el=document.getElementById(`block-${id}`);if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.style.boxShadow="0 0 20px #dba64b50";setTimeout(()=>{el.style.boxShadow=""},1500)}},80);
   },[]);
 
-  return <div style={{background:"#111118",color:"#e0e0ec",height:"100vh",fontFamily:"'Segoe UI','Helvetica Neue',sans-serif",display:"flex",flexDirection:"column"}}>
-    <style>{`::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#111118}::-webkit-scrollbar-thumb{background:#2c2c42;border-radius:3px}::-webkit-scrollbar-thumb:hover{background:#40405a}input:focus{border-color:#4466aa !important}`}</style>
+  return <div className="memmap-root" style={{background:"#0f0e0d",color:"#f4efe6",height:"100%",position:"relative",fontFamily:"var(--font-geist-sans),ui-sans-serif,system-ui,sans-serif",display:"flex",flexDirection:"column"}}>
+    <style>{`.memmap-root ::-webkit-scrollbar{width:6px}.memmap-root ::-webkit-scrollbar-track{background:#0f0e0d}.memmap-root ::-webkit-scrollbar-thumb{background:#35302a;border-radius:3px}.memmap-root ::-webkit-scrollbar-thumb:hover{background:#4a423a}.memmap-root input:focus{border-color:#8a6a2e !important}`}</style>
 
     {/* Header */}
-    <div style={{padding:"10px 16px 8px",borderBottom:"1px solid #222232",background:"#13131b",flexShrink:0}}>
+    <div style={{padding:"10px 16px 8px",borderBottom:"1px solid #24211d",background:"#161513",flexShrink:0}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7,flexWrap:"wrap",gap:8}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <span style={{fontSize:13,fontWeight:700,color:"#8ec5fc",letterSpacing:1.5,textTransform:"uppercase"}}>STM32F407VGT6</span>
-          <span style={{fontSize:11,color:"#484860"}}>Memory Map Explorer</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#dba64b",letterSpacing:1.5,textTransform:"uppercase"}}>STM32F407VGT6</span>
+          <span style={{fontSize:11,color:"#5b544a"}}>Memory Map Explorer</span>
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center"}}>
-          <input value={searchQuery} onChange={e=>{setSearchQuery(e.target.value);if(!e.target.value)doSearch("")}} onKeyDown={e=>{if(e.key==="Enter")doSearch(searchQuery)}} placeholder="Search… (press Enter)" style={{width:260,background:"#1a1a28",border:"1px solid #333348",borderRadius:4,padding:"4px 8px",color:"#d0d0e0",fontSize:11,fontFamily:"'Segoe UI',sans-serif",outline:"none"}}/>
-          {searchQuery&&<button onClick={()=>{setSearchQuery("");doSearch("")}} style={{background:"#2a2a3a",border:"1px solid #3a3a4e",borderRadius:3,color:"#9898b0",padding:"3px 8px",fontSize:10,cursor:"pointer"}}>✕</button>}
-          <button onClick={expandAll} style={{background:"#1e1e30",border:"1px solid #2e2e44",borderRadius:4,color:"#8888aa",padding:"3px 10px",fontSize:11,cursor:"pointer",fontWeight:600}}>Expand All</button>
-          <button onClick={collapseAll} style={{background:"#1e1e30",border:"1px solid #2e2e44",borderRadius:4,color:"#8888aa",padding:"3px 10px",fontSize:11,cursor:"pointer",fontWeight:600}}>Collapse All</button>
+          <input value={searchQuery} onChange={e=>{setSearchQuery(e.target.value);if(!e.target.value)doSearch("")}} onKeyDown={e=>{if(e.key==="Enter")doSearch(searchQuery)}} placeholder="Search… (press Enter)" style={{width:260,background:"#1c1a17",border:"1px solid #3a352e",borderRadius:4,padding:"4px 8px",color:"#e6dfd2",fontSize:11,fontFamily:"var(--font-geist-sans),ui-sans-serif,system-ui,sans-serif",outline:"none"}}/>
+          {searchQuery&&<button onClick={()=>{setSearchQuery("");doSearch("")}} style={{background:"#221f1a",border:"1px solid #3a352e",borderRadius:3,color:"#aca395",padding:"3px 8px",fontSize:10,cursor:"pointer"}}>✕</button>}
+          <button onClick={expandAll} style={{background:"#221f1a",border:"1px solid #2e2a25",borderRadius:4,color:"#8c8372",padding:"3px 10px",fontSize:11,cursor:"pointer",fontWeight:600}}>Expand All</button>
+          <button onClick={collapseAll} style={{background:"#221f1a",border:"1px solid #2e2a25",borderRadius:4,color:"#8c8372",padding:"3px 10px",fontSize:11,cursor:"pointer",fontWeight:600}}>Collapse All</button>
         </div>
       </div>
-      {matches.size>0&&<div style={{fontSize:10,color:"#e0b030"}}>{matches.size} match{matches.size!==1?"es":""} found</div>}
+      {matches.size>0&&<div style={{fontSize:10,color:"#dba64b"}}>{matches.size} match{matches.size!==1?"es":""} found</div>}
     </div>
 
     {/* Body */}
     <div style={{flex:1,display:"flex",overflow:"hidden"}}>
-      <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:"12px 16px 90px"}}>
-        <h1 style={{fontSize:17,fontWeight:700,color:"#e2e2f2",margin:"0 0 4px 0"}}>ARM Cortex-M4 — 4 GB Address Space</h1>
+      {/* overflow on BOTH axes: the address column plus a name plus the badges
+          needs ~560 px, and below that the rows used to crush rather than pan */}
+      <div ref={scrollRef} style={{flex:1,overflow:"auto",padding:"12px 16px 90px"}}>
+       <div style={{minWidth:560}}>
+        <h1 style={{fontSize:17,fontWeight:700,color:"#f4efe6",margin:"0 0 4px 0"}}>ARM Cortex-M4 — 4 GB Address Space</h1>
         <BlockTree groupKey="root" depth={0} expanded={expanded} onToggle={toggle} matches={matches} bookmarks={bookmarks} onBookmark={toggleBookmark}/>
-        {expanded.size===0&&!searchQuery&&<div style={{marginTop:16,padding:"9px 13px",background:"#14141c",borderRadius:5,border:"1px solid #222236"}}>
-          <div style={{fontSize:10,fontWeight:700,color:"#505068",marginBottom:5}}>LEGEND</div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:14,fontSize:11,color:"#7878a0"}}>
+        {expanded.size===0&&!searchQuery&&<div style={{marginTop:16,padding:"9px 13px",background:"#171614",borderRadius:5,border:"1px solid #24211d"}}>
+          <div style={{fontSize:10,fontWeight:700,color:"#635c4f",marginBottom:5}}>LEGEND</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:14,fontSize:11,color:"#8c8372"}}>
             <span>▶ Click to expand</span>
             <span><span style={{color:"#ff6666",fontWeight:700}}>XN</span> = Execute Never</span>
             <span><span style={{color:"#44cc66",fontWeight:700}}>DISC</span> = Wired on Discovery board</span>
@@ -1332,6 +1335,7 @@ export default function MemoryMapExplorer() {
             <span>Hover 350ms = peek inside</span>
           </div>
         </div>}
+       </div>
       </div>
       <Minimap expanded={expanded} onJump={minimapJump}/>
     </div>

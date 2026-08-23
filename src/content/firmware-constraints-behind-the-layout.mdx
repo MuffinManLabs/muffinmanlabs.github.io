@@ -45,7 +45,7 @@ Then match the divider to the converter's usable window rather than to 0 to 3.3 
 
 ## Pick parts the firmware already knows
 
-MML-01 uses a BME280 because ESPHome has a first-class component for it. MML-02 uses WS2812B because WLED does. MML-03 speaks Modbus over RS-485 because Tasmota does. A sensor with no existing driver turns a two-line configuration entry into a custom component that somebody has to write, test and maintain, and that somebody is being paid by the client.
+MML-01 uses a BME280 because ESPHome has a first-class component for it. MML-02 reads its field inputs as plain GPIOs behind optocouplers and drives its relays as plain GPIOs, because every mainstream ESP32 firmware can already do both without a line of custom code. A sensor with no existing driver turns a two-line configuration entry into a custom component that somebody has to write, test and maintain, and that somebody is being paid by the client.
 
 ```yaml
 sensor:

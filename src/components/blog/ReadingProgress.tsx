@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/** A thin copper→gold fill under the header that tracks reading position. */
+/** A hairline under the header that tracks reading position. */
 export default function ReadingProgress() {
   const [pct, setPct] = useState(0);
   const rafRef = useRef<number | null>(null);
@@ -26,18 +26,10 @@ export default function ReadingProgress() {
   }, []);
 
   return (
-    <div
-      aria-hidden
-      className="fixed top-16 left-0 right-0 z-40 h-px"
-      style={{ background: "rgba(184,115,51,0.18)" }}
-    >
+    <div aria-hidden className="fixed top-14 left-0 right-0 z-40 h-px">
       <div
         className="h-full origin-left"
-        style={{
-          width: `${pct * 100}%`,
-          background: "linear-gradient(90deg, #b87333, #f0d488)",
-          boxShadow: pct > 0.01 ? "0 0 8px rgba(240,212,136,0.45)" : "none",
-        }}
+        style={{ width: `${pct * 100}%`, background: "var(--text)" }}
       />
     </div>
   );

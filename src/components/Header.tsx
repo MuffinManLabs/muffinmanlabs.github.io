@@ -1,97 +1,93 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-const navLinks = [
-  { href: "/#services", label: "SERVICES" },
-  { href: "/#boards", label: "BOARDS" },
-  { href: "/#skills", label: "SKILLS" },
-  { href: "/#about", label: "ABOUT" },
-  { href: "/blog", label: "NOTES" },
-  { href: "/#contact", label: "CONTACT" },
+/* Four links. The page is short enough that it does not need more. */
+const links = [
+  { href: "/#work", label: "Work" },
+  { href: "/#capability", label: "Capability" },
+  { href: "/blog", label: "Notes" },
+  { href: "/memory-map", label: "Memory Map" },
 ];
 
 export default function Header() {
+  const path = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const sentinel = useRef<HTMLDivElement>(null);
 
+  /* A sentinel plus one IntersectionObserver, rather than a scroll listener:
+     the old version ran a callback on every scroll frame just to compare a
+     number. This fires twice — once on the way down, once on the way back. */
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const el = sentinel.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const obs = new IntersectionObserver(([e]) => setScrolled(!e.isIntersecting));
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? "bg-[#0d0c11]/85 backdrop-blur-md border-b border-[#eae6da]/8"
-          : "bg-transparent"
-      }`}
-    >
-      <nav className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-        <a href="/" className="flex items-center gap-3">
-          <Image
-            src="/logo-96.png"
-            alt="MuffinByteLabs"
-            width={30}
-            height={30}
-            className="rounded"
-          />
-          <span className="hidden sm:flex items-baseline gap-2">
-            <span className="text-sm font-semibold tracking-wide text-[#eae6da]">
+    <>
+      <div
+        ref={sentinel}
+        aria-hidden
+        style={{ position: "absolute", top: 12, left: 0, width: 1, height: 1, pointerEvents: "none" }}
+      />
+      <header
+        className="fixed top-0 left-0 right-0 z-50 transition-colors duration-300"
+        style={{
+          background: scrolled ? "var(--header-bg)" : "transparent",
+          backdropFilter: scrolled ? "saturate(150%) blur(14px)" : undefined,
+          WebkitBackdropFilter: scrolled ? "saturate(150%) blur(14px)" : undefined,
+          borderBottom: `1px solid ${scrolled ? "var(--border-soft)" : "transparent"}`,
+        }}
+      >
+        <nav className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 shrink-0"
+            style={{ color: "var(--text)" }}
+            aria-label="MuffinByteLabs — home"
+          >
+            <span className="logo" aria-hidden style={{ width: 30, height: 30 }} />
+            {/* below 640px the wordmark plus three nav items is ~6px wider
+                than the viewport and the two collide; the mark carries the
+                brand on its own, and the name is in the hero right below */}
+            <span className="hidden sm:inline text-[16px] font-medium tracking-[-0.012em]">
               MuffinByteLabs
             </span>
-            <span className="font-mono text-[11px] tracking-[0.25em] text-[#d4af37]/80">
-              KICAD PCB DESIGN
-            </span>
-          </span>
-        </a>
-
-        {/* Desktop nav */}
-        <ul className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <li key={link.href}>
-              <a
-                href={link.href}
-                className="relative font-mono text-[11px] tracking-[0.2em] text-[#eae6da]/55 hover:text-[#f0d488] transition-colors duration-300 after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#f0d488] after:transition-transform after:duration-300 hover:after:scale-x-100 motion-reduce:after:transition-none"
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-
-        {/* Mobile hamburger */}
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden -mr-2 p-2 font-mono text-[#eae6da]/60 hover:text-[#f0d488] text-xl transition-colors cursor-pointer"
-          aria-label="Toggle menu"
-          aria-expanded={mobileOpen}
-        >
-          {mobileOpen ? "✕" : "☰"}
-        </button>
-      </nav>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="md:hidden bg-[#0d0c11]/98 backdrop-blur-md border-b border-[#eae6da]/8">
-          <ul className="flex flex-col gap-4 px-6 py-6">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="font-mono text-xs tracking-[0.2em] text-[#eae6da]/55 hover:text-[#f0d488] transition-colors duration-300"
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
+          </Link>
+          {/* Four items plus the wordmark overflow a 320px viewport whatever the
+              type size, so the list scrolls rather than colliding with the mark.
+              At every real width it never actually scrolls. */}
+          <ul className="flex items-center gap-4 sm:gap-6 min-w-0 overflow-x-auto no-scrollbar">
+            {links.map((l) => {
+              const hash = l.href.startsWith("/#");
+              /* the anchor links live on the home page, so "here" for them is
+                 simply being on it; Notes stays lit across every post */
+              const here = hash ? false : path === l.href || path.startsWith(l.href + "/");
+              const cls = "link-quiet text-[13px] sm:text-sm whitespace-nowrap";
+              const style = here ? { color: "var(--text)" } : undefined;
+              const current = here ? ("page" as const) : undefined;
+              return (
+                <li key={l.href} className="shrink-0">
+                  {hash ? (
+                    <a href={l.href} className={cls}>
+                      {l.label}
+                    </a>
+                  ) : (
+                    <Link href={l.href} className={cls} style={style} aria-current={current}>
+                      {l.label}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
           </ul>
-        </div>
-      )}
-    </header>
+        </nav>
+      </header>
+    </>
   );
 }

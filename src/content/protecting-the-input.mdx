@@ -9,7 +9,7 @@ Everything that goes wrong with a power input arrives through the connector: a s
 
 ## The order, and why it is that order
 
-On MML-03 the 24V front end runs, from the screw terminal inward: PPTC, series Schottky, TVS, bulk electrolytic, buck.
+On MML-02 the 24V front end runs, from the screw terminal inward: PPTC, bridge rectifier, TVS, bulk electrolytic, buck.
 
 The fuse goes first because everything downstream, the TVS included, should sit behind overcurrent protection. A TVS fails short, and a short with nothing in front of it is a fire.
 
@@ -27,7 +27,7 @@ Trip current is where it reliably opens, and the time to get there runs from mil
 
 Series resistance is the third number and it is not small: a sub-amp device can be several hundred milliohms of permanent drop and self-heating. A tripped PPTC never fully recovers either, resetting to a higher resistance than it started with. Its voltage rating must also exceed your supply, ruling out common 6V and 16V parts on 24V.
 
-On MML-02 that same front end feeds an 8x8 WS2812B matrix pulling roughly 3.8A at full white, where PPTC resistance and hold derating get expensive enough that a plain fuse wins.
+Put that same front end in front of something like an 8x8 WS2812B matrix pulling roughly 3.8A at full white, and PPTC resistance and hold derating get expensive enough that a plain fuse wins.
 
 ## TVS: standoff above, clamping below
 
@@ -35,13 +35,15 @@ Standoff, VRWM, must sit above the highest voltage the rail legally reaches, inc
 
 Clamping voltage is the one people forget, and it must sit below what everything downstream survives. An SMBJ30A clamps at up to 48.4V at its rated 12.4A pulse, so a 40V-rated buck behind it is not protected, only nearby. You want a 60V switcher. An SMBJ33A buys standoff headroom but pushes clamping to about 53V, making that worse. The gap between standoff and clamping is the window your parts have to fit inside.
 
-Leakage at standoff is not zero either: a part like the SMBJ5.0A on MML-02 can leak hundreds of microamps, which matters on anything battery-powered. And the datasheet clamping figure assumes an ideal connection, so your real clamp is that number plus current times the resistance and inductance of your layout. Short, wide, direct return to connector ground.
+Leakage at standoff is not zero either: a part like the SMBJ5.0A can leak hundreds of microamps, which matters on anything battery-powered. And the datasheet clamping figure assumes an ideal connection, so your real clamp is that number plus current times the resistance and inductance of your layout. Short, wide, direct return to connector ground.
 
-## Reverse polarity: Schottky or P-MOSFET
+## Reverse polarity: Schottky, P-MOSFET, or a bridge
 
-A series Schottky is one part and it always works, at a forward drop of 0.3 to 0.5V. On a 24V rail that is about two percent and thermally trivial at a few hundred milliamps, which is why MML-03 uses one; on 5V the same drop is eight percent. Rate its reverse voltage above the supply with margin, and remember reverse leakage climbs steeply with temperature.
+A series Schottky is one part and it always works, at a forward drop of 0.3 to 0.5V. On a 24V rail that is about two percent and thermally trivial at a few hundred milliamps; on 5V the same drop is eight percent. Rate its reverse voltage above the supply with margin, and remember reverse leakage climbs steeply with temperature.
 
 Above roughly an amp, use a P-channel MOSFET. Drain to the incoming supply, source to the load, so the body diode conducts in the normal direction. Gate to ground through 10k to 100k gives a large negative gate-source voltage and turns the FET fully on. Reverse the supply and gate-source goes to zero: FET off, body diode reverse-biased. At 24V add a Zener from gate to source, since most P-FETs are rated 20V gate-source maximum. The drop then becomes current times RDS(on): 50 milliohms at 1A is 50 mV, against 400 mV for the Schottky.
+
+If the input might be AC as well as DC, neither of those is the answer: use a full bridge rectifier. That is what MML-02 does, because its terminal takes 9–36 VDC or 24 VAC and an installer should not have to care which way round two field wires go. It costs two forward drops instead of one — roughly 1.8V, so 9V in still leaves about 7.2V for a 5V buck — and reverse-wired DC stops being something you protect against and becomes impossible.
 
 ## Bulk capacitance and hot plug
 

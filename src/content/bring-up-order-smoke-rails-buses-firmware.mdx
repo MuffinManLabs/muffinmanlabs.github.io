@@ -17,11 +17,11 @@ Then the meter, in resistance mode, everything still unpowered:
 - Rail to rail: 5 V to 3V3, 24 V to 5 V. These should never read low.
 - Input to ground with the leads reversed, if the board claims reverse-polarity protection. Verify the claim now, while it is free.
 
-Continuity from the input terminal through the protection chain is worth another 30 seconds. On MML-03 that path is screw terminal, polyfuse, TVS, Schottky — four parts that can each be missing, backwards or cold-jointed.
+Continuity from the input terminal through the protection chain is worth another 30 seconds. On MML-02 that path is screw terminal, polyfuse, bridge rectifier, TVS — four parts that can each be missing, backwards or cold-jointed.
 
 ## First power: watch the current, not the board
 
-Use a bench supply with an adjustable current limit. Set the voltage to the nominal input, then set the limit just above what the board should idle at — for MML-03 at 24 V, around 100 mA, generous for a buck's quiescent draw plus an idle LDO.
+Use a bench supply with an adjustable current limit. Set the voltage to the nominal input, then set the limit just above what the board should idle at — for MML-02 at 24 V, around 100 mA, generous for a buck's quiescent draw plus an idle LDO.
 
 Bring the voltage up and watch the supply's current display, not the board. If it drops into constant current, the limit did its job: kill it and go find the short. That single habit is what stands between a rework and a scrapped board.
 
@@ -58,7 +58,7 @@ With the rails proven, bring up the digital plumbing:
 
 Load the smallest program that proves one fact. A blink, or a serial print. Then a single sensor read. Only then the real firmware.
 
-On MML-02 the matrix runs at low brightness from a current-monitored supply before WLED is ever installed, because an 8x8 WS2812B panel at full white draws roughly 3.8 A — a number to measure, not assume — and WLED's current limit gets set from what the meter said. On MML-03, Tasmota comes up with the opto-isolated outputs unloaded and each channel gets exercised one at a time. On MML-01, ESPHome goes on only after the I2C scan has already named both sensors.
+On MML-02 the firmware comes up with the relay and MOSFET outputs unloaded, and each channel gets exercised one at a time before anything real is wired to it. On MML-01, ESPHome goes on only after the I2C scan has already named both sensors.
 
 ## What makes this fast
 

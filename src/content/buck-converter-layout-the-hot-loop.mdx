@@ -3,7 +3,7 @@ title: "Buck Converter Layout: The Loop That Matters"
 date: "2026-06-15"
 readTime: "5 min read"
 tag: "Power"
-excerpt: "The hot loop — input cap, high-side switch, return path — is the one thing in a buck layout that has to be physically tiny. How I lay out the 24V to 5V stage on MML-03."
+excerpt: "The hot loop — input cap, high-side switch, return path — is the one thing in a buck layout that has to be physically tiny. How I lay out the 24V to 5V stage on MML-02."
 ---
 A buck converter schematic is nearly copy-paste: the IC, an inductor, an input cap, an output cap, a feedback divider, every value off the datasheet. Then the board comes back with 800 mV of ringing on the 5 V rail, a switch node overshooting past the IC's absolute maximum, and enough radiated noise to upset an ADC three centimeters away. The schematic was fine. The layout put a loop in the wrong place.
 
@@ -19,13 +19,13 @@ Loop area is what turns di/dt into a problem. A trace over a plane runs roughly 
 
 Before the inductor, before anything else: put the high-frequency ceramic input capacitor across the IC's VIN and GND pins with the shortest, widest connection the footprints allow. It closes the hot loop, so its placement defines the loop.
 
-The bulk electrolytic is not that capacitor. It is too far away and too inductive to service a 20 ns edge; its job is holding the rail up during load steps. On MML-03 the 24 V input passes a polyfuse, a TVS and a series Schottky for reverse polarity, then the bulk electrolytic, and only then a 10 uF X7R ceramic sitting directly on the buck's input pins. Rate that ceramic for at least 50 V — X7R loses a large fraction of its capacitance under DC bias, so a 25 V part running at 24 V is a 10 uF part behaving like a 3 uF part.
+The bulk electrolytic is not that capacitor. It is too far away and too inductive to service a 20 ns edge; its job is holding the rail up during load steps. On MML-02 the 24 V input passes a polyfuse, a bridge rectifier and a TVS, then the bulk electrolytic, and only then a 10 uF X7R ceramic sitting directly on the buck's input pins. Rate that ceramic for at least 50 V — X7R loses a large fraction of its capacitance under DC bias, so a 25 V part running at 24 V is a 10 uF part behaving like a 3 uF part.
 
 ## The switch node is an antenna, not a bus
 
 SW is the one net with a hard dV/dt: 24 V in 15 ns is more than 1 V/ns. Copper there is a capacitively coupled transmitter. Make it just big enough to carry the inductor current and, if the IC needs it, to pull heat out — and no bigger. Do not pour a polygon on it because the area looked empty. Put the inductor right next to the pin.
 
-Then keep everything else away: nothing sensitive under SW, under the inductor, or parallel to either. A four-layer stackup lets you cross on another layer with ground in between. On a 2-layer board like MML-03 you have no shield, so your only tool is distance.
+Then keep everything else away: nothing sensitive under SW, under the inductor, or parallel to either. A four-layer stackup lets you cross on another layer with ground in between. On a 2-layer board like MML-02 you have no shield, so your only tool is distance.
 
 ## Feedback is the quiet net
 

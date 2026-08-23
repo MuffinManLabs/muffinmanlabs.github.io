@@ -27,7 +27,7 @@ Temperature rise is a decision you make, not a constant. 10C is a conservative d
 
 ## Working it for the matrix rail
 
-MML-02 drives an onboard 8x8 WS2812B matrix. Each LED is three channels at roughly 20 mA, so about 60 mA at full white, and 64 of them is 3.84A. Add the ESP32-S3 and the 74AHCT125 buffer and I size the 5V path for 4A.
+Take a board driving an onboard 8x8 WS2812B matrix. Each LED is three channels at roughly 20 mA, so about 60 mA at full white, and 64 of them is 3.84A. Add an ESP32-S3 and a 74AHCT125 buffer and the 5V path has to be sized for 4A.
 
 For 4A on an external layer in 1 oz copper:
 
@@ -44,7 +44,7 @@ Thermal width and electrical width are different calculations and you take the w
 
 A 2 mm wide, 1 oz trace, 100 mm long has a cross-section of about 0.07 square mm and a resistance near 25 milliohms. At 4A that is 98 mV of drop, and the ground return does the same thing again, so you lose close to 0.2V round trip. WS2812Bs keep running below 5V, but as the rail sags the white point drifts, and it drifts more at the far end of the chain than the near end. A matrix that looks faintly yellow in one corner at full white is usually a copper problem, not a firmware problem.
 
-It is also why the 5V input on MML-02 is a dedicated XT30, screw terminal or barrel jack, never the USB port. A Type-C receptacle is rated to 5A on VBUS, but pulling 4A through one means a PD controller, a 5A e-marked cable and a source that will actually offer it. That is three parts and a negotiation this board does not need in order to accept 5V from a barrel jack.
+It is also why a board like that takes 5V on a dedicated XT30, screw terminal or barrel jack, never the USB port. A Type-C receptacle is rated to 5A on VBUS, but pulling 4A through one means a PD controller, a 5A e-marked cable and a source that will actually offer it. That is three parts and a negotiation this board does not need in order to accept 5V from a barrel jack.
 
 ## The narrowest point sets the temperature
 

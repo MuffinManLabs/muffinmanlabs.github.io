@@ -50,7 +50,7 @@ The pick-and-place file lists a designator, X, Y, rotation and layer for every p
 
 One rule prevents nearly all of this: regenerate the BOM and the position file together, from the same board file, at the same moment, every time. Re-annotate the schematic after exporting and both files are stale.
 
-Do-not-populate needs an explicit convention, because a blank cell invites a guess. Keep the footprint, keep the designator, mark it DNP in the schematic, exclude it from both the BOM and the position file, then list it by designator in the assembly notes as intentionally unpopulated. On MML-03 the optional RS-485 transceiver and its termination are exactly that: the copper is there, the parts are a build option, and one line in the notes means nobody has to ask.
+Do-not-populate needs an explicit convention, because a blank cell invites a guess. Keep the footprint, keep the designator, mark it DNP in the schematic, exclude it from both the BOM and the position file, then list it by designator in the assembly notes as intentionally unpopulated. On MML-02 the snubber and MOV footprints across the relay contacts are exactly that: the copper is there, the parts are a per-deployment build option, and one line in the notes means nobody has to ask.
 
 ## The check before you send
 

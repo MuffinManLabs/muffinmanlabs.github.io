@@ -35,7 +35,7 @@ Run it for 1 oz outer copper and a 10 C rise:
 - 20 mil, or 0.5 mm, carries about 1.4 A
 - 55 mil, or 1.4 mm, carries about 3 A
 
-Which is why MML-02 does not route its 5 V rail as a trace at all. An 8x8 WS2812B matrix at full white draws roughly 3.8 A, and at that level on 1 oz copper you are drawing pours rather than tracks, then checking that the pour has a wide path from the XT30 pads to the far corner of the matrix instead of a thin neck that DRC is perfectly happy with.
+Which is why a 5 V rail feeding an 8x8 WS2812B matrix does not get routed as a trace at all. At full white that panel draws roughly 3.8 A, and at that level on 1 oz copper you are drawing pours rather than tracks, then checking that the pour has a wide path from the input pads to the far corner instead of a thin neck that DRC is perfectly happy with.
 
 ## Encode it in KiCad before the first track
 
@@ -43,7 +43,7 @@ Board Setup, Constraints: minimum clearance, minimum track width, minimum via di
 
 Board Setup, Net Classes: here the rules stop being a floor and start being a plan. A sensible starting set is a default class at 0.25 mm track, a power class at 0.5 mm or wider with larger vias, and a USB class with the right differential settings. Assign by pattern so new nets inherit the right class.
 
-Board Setup, Custom Rules: for constraints the fab does not care about but the design does. MML-03's opto-isolation gap is exactly that:
+Board Setup, Custom Rules: for constraints the fab does not care about but the design does. MML-02's opto-isolation gap is exactly that:
 
 ```text
 (version 1)

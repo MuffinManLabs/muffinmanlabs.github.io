@@ -48,7 +48,7 @@ A 10k pull-up into 50-100 pF of trace and input capacitance takes hundreds of na
 
 ## Placement and the series resistor
 
-On MML-02 the matrix is onboard, so every run is short, but the ordering still matters:
+With the matrix on the same board as the driver every run is short, but the ordering still matters:
 
 - Keep the 3.3 V run from the MCU to the buffer short. That is the low-margin segment.
 - Put the series resistor at the buffer output pin, not at the LED: series termination works against the driver's own output impedance, so it belongs at the driving end. With the buffer a couple of centimeters from the first LED, the two placements converge anyway.

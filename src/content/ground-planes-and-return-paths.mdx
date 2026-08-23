@@ -3,7 +3,7 @@ title: "Ground Planes: The Return Path Nobody Draws"
 date: "2026-05-04"
 readTime: "5 min read"
 tag: "Layout"
-excerpt: "Return current flows directly under the trace, not wherever it likes. What a slot in the pour really does, and how MML-03 keeps logic ground and field ground apart."
+excerpt: "Return current flows directly under the trace, not wherever it likes. What a slot in the pour really does, and how MML-02 keeps logic ground and field ground apart."
 ---
 Every schematic has forty ground symbols on it and not one of them tells you where the current actually goes. That is the whole problem. A ground symbol is a promise that return current gets home; the copper you draw decides whether it takes a short path or a long one.
 
@@ -33,9 +33,9 @@ A solid pour is a high-frequency idea. It says give every fast edge the tightest
 
 The two only conflict when you apply the wrong one. Star grounding a fast digital bus is how you build an antenna. Pouring one uninterrupted plane under a switching regulator and a precision measurement is how you get noise in your readings. Ask what current flows, and how fast it changes.
 
-## How MML-03 splits its grounds
+## How MML-02 splits its grounds
 
-MML-03 is a 24 V I/O controller: 24 V in, a buck to 5 V, an AP2112K to 3.3 V, an ESP32-S3, and PC817 opto-isolated outputs.
+MML-02 is a field I/O controller: 9–36 VDC or 24 VAC in, a buck to 5 V, an AP2112K to 3.3 V, an ESP32-S3, PC817 opto-isolated inputs, and relay and low-side MOSFET outputs.
 
 The 24 V input return and the logic return are the same net, but not the same copper path. The buck's hot loop — input capacitor, switch, low-side return — gets its own tight pour, which meets the logic pour at a single point at the input capacitor ground pad. The switching return current has no reason to travel under the microcontroller, so it does not.
 

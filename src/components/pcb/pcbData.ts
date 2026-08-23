@@ -24,12 +24,23 @@ export const PCB = {
 } as const;
 
 /* ---- Hero board-house string + status strip ---- */
-export const FAB_STRING = "MML-PCB · REV_A · KICAD 10 NATIVE · 2-LAYER · FR-4 · ENIG";
+export const FAB_STRING = "MML-PCB · REV_A · KICAD 10 NATIVE · 2 & 4-LAYER · FR-4 · ENIG";
 export const STATUS_OK = "DRC: 0 · ERC: 0";
-export const STATUS_SPECS = "KICAD 10 · 2-LAYER · 1.6mm FR-4 · ENIG · JLCPCB";
+export const STATUS_SPECS = "KICAD 10 · 2 & 4-LAYER · FR-4 · JLCPCB · 2 BOARDS ORDERED";
 export const POWER_STATUS = "> board powered :: rails nominal :: DRC clean / ERC clean";
 export const DESIGNATOR =
   "KICAD PCB DESIGN SPECIALIST · ESP32 BOARDS · JLCPCB PRODUCTION-READY";
+/* the hero proof chip — the one claim that has hardware behind it */
+export const HERO_PROOF =
+  "2 boards designed, ordered and fabricated · MML-01 built and brought up";
+
+/* The three things a client wants to know before they write the first
+   message. Stated at the top rather than buried in a contract page. */
+export const HERO_TERMS: { label: string; note: string }[] = [
+  { label: "Fixed quote in 24h", note: "scope, price and timeline in writing" },
+  { label: "Money-back guarantee", note: "in every signed contract" },
+  { label: "You own every file", note: "native KiCad, no conversions" },
+];
 
 /* ════════════════════════════════════════════════════════════════════════
    ABOUT — the person behind the service
@@ -42,6 +53,7 @@ export const ABOUT_PARAGRAPHS: string[] = [
 
 export const ABOUT_CREDENTIALS: { label: string; detail: string }[] = [
   { label: "KiCad 8–10, native", detail: "no Altium, no lossy conversions" },
+  { label: "4-layer, built and brought up", detail: "MML-01 measured against every acceptance step" },
   { label: "JLCPCB / PCBWay ready", detail: "rules set from the capability sheet" },
   { label: "Documented hand-offs", detail: "README, REV notes, Git history" },
   { label: "Money-back guarantee", detail: "written into every contract" },
@@ -129,9 +141,10 @@ export const PACKAGE_TREE: TreeNode = {
         { name: "BOM.csv", note: "Every line item with a real manufacturer part number (LCSC / Digi-Key) so assembly can actually source it." },
         { name: "CPL.csv", note: "Centroid / pick-and-place file — X/Y/rotation per part for the assembly robot." },
         { name: "schematic.pdf", note: "Human-readable schematic so a reviewer can sanity-check the circuit without opening KiCad." },
+        { name: "paste.gbr + stencil-notes.md", note: "The paste layer and the stencil order — thickness and aperture design reviewed against the fine-pitch and exposed-pad datasheets before the stencil is cut. A stencil is only as good as the apertures behind it." },
       ],
     },
-    { name: "docs/", note: "3D render, layout + schematic screenshots, ERC/DRC-clean proof, JLCPCB upload preview, and bring-up photos." },
+    { name: "docs/", note: "3D render, layout + schematic screenshots, ERC/DRC-clean proof, fab upload preview, and bring-up photos." },
     { name: "README.md", note: "States the design intent — what the board does, the constraints it was built under, and how to regenerate every output. The first file your next engineer reads." },
     { name: "REV_A_notes.md", note: "Honest list of what I would change in Rev B — so the next spin starts with a plan, not a guess." },
     { name: "CHANGES.md", note: "Revision log across board spins." },
@@ -149,209 +162,319 @@ export const CLEAN_BADGES: Badge[] = [
   { label: "3D RENDER", note: "Mechanical fit verified" },
 ];
 
+
 /* ════════════════════════════════════════════════════════════════════════
-   THE THREE PORTFOLIO BOARDS
+   THE PUBLIC REPOSITORY — MML-01, open sourced.
+
+   The strongest single piece of evidence on the site: not a render, not a
+   claim, but the actual KiCad project and the frozen package that was
+   uploaded to the fab, with the written design document and the review
+   records that produced it. Anyone can read the whole thing, including the
+   mistakes that were caught before boards were built.
    ════════════════════════════════════════════════════════════════════════ */
-export type BoardComponent = { refdes: string; part: string; role: string };
+export const REPO = {
+  url: "https://github.com/MuffinByteLabs/esp32s3-plant-monitor",
+  owner: "MuffinByteLabs",
+  name: "esp32s3-plant-monitor",
+  board: "MML-01",
+  licence: "CERN-OHL-P v2",
+  /* the one-line pitch, used in more than one place */
+  blurb:
+    "The complete KiCad project for MML-01 — schematic, layout, the exact package that was uploaded to JLCPCB, and every document that produced it.",
+} as const;
+
+export type RepoDir = { path: string; name: string; note: string };
+
+export const REPO_TREE: RepoDir[] = [
+  {
+    path: "hardware",
+    name: "hardware/",
+    note: "The KiCad 10 project itself — hierarchical schematic, 4-layer board, and the footprint and symbol libraries it depends on. Open it and edit it; nothing is locked.",
+  },
+  {
+    path: "fabrication",
+    name: "fabrication/",
+    note: "The frozen manufacturing package, exactly as uploaded: Gerbers, drill, BOM and CPL for the revision that was ordered. Not regenerated for the repo — archived at order time.",
+  },
+  {
+    path: "docs",
+    name: "docs/",
+    note: "The written design document, the bring-up guide, engineering notes and layout rules. Every part on the board has a paragraph saying why it is there.",
+  },
+  {
+    path: "references",
+    name: "references/",
+    note: "Every datasheet and reference design the choices were made from, so a reviewer can check the arithmetic without going hunting.",
+  },
+  {
+    path: "firmware",
+    name: "firmware/",
+    note: "The firmware project for the board. Layout decisions on this board were made knowing what the code would have to do at boot.",
+  },
+];
+
+/** What a visitor will actually find if they go and look. */
+export const REPO_HIGHLIGHTS: { label: string; note: string }[] = [
+  { label: "Two design reviews", note: "findings, severity and the fix that went in" },
+  { label: "An independent final audit", note: "run before the order was placed" },
+  { label: "The pre-order gate list", note: "DRC / ERC clean, schematic parity, polarity checked against a pin-1 table" },
+  { label: "A bring-up guide", note: "staged, with the number each step has to hit" },
+  { label: "Rev B notes", note: "an honest list of what I would change next" },
+];
+
+/* ════════════════════════════════════════════════════════════════════════
+   THE PORTFOLIO BOARDS
+
+   Deliberately thin. A client scrolling a portfolio wants to know what the
+   board is, whether it actually exists, and to see it — not to read a
+   design review. The engineering detail lives in the repo and in Field
+   Notes, where someone who wants it can go looking.
+
+   ── UPDATE POINT ──────────────────────────────────────────────────────
+   `status.kind` is the one field that must never run ahead of reality:
+   "built" only once bring-up has actually passed.
+   ══════════════════════════════════════════════════════════════════════ */
+
+export type BoardStatus = {
+  kind: "built" | "fab";
+  label: string;
+};
 
 export type Board = {
-  id: string; // silkscreen designator e.g. MML-01
+  id: string; // silkscreen designator
   name: string;
-  tagline: string;
-  problem: string;
-  mainSkill: string;
-  proves: string;
-  firmware: string;
+  /** one sentence: what it is and who it is for */
+  summary: string;
   accent: string;
-  specs: { layers: string; mcu: string; power: string; extra: string };
-  components: BoardComponent[];
-  mfgPack: string[];
-  /** bring-up UART log printed when the card is expanded */
-  bringup: string[];
+  status: BoardStatus;
+  /** the short spec line under the title */
+  specs: string[];
+  /** rotatable model exported from KiCad, if one exists yet */
+  model?: string;
+  /** public repository, where the whole project can be read */
+  repo?: { url: string; owner: string; name: string };
+  /** board imagery — captioned, and honest about what each one is */
+  images?: { src: string; alt: string; tag: string; caption: string }[];
 };
 
 export const BOARDS: Board[] = [
   {
     id: "MML-01",
-    name: "Prototype-to-PCB Sensor Node",
-    tagline: "Breadboard mess in, manufacturable board out.",
-    problem: "Turn my prototype into a manufacturable board.",
-    mainSkill: "Schematic capture + clean 2-layer layout",
-    proves:
-      "Datasheet-to-schematic capture, shared I2C/SPI buses, a protected analog input, and a tidy 2-layer pour that DRCs clean.",
-    firmware: "ESPHome",
-    accent: "#f0d488", // ENIG gold — the foundation board
-    specs: {
-      layers: "2-layer · signal + ground pour",
-      mcu: "ESP32-S3-WROOM-1",
-      power: "USB-C 5V + LiPo · AP2112K-3.3 rail",
-      extra: "One shared I2C pull-up pair · one protected ADC input",
-    },
-    components: [
-      { refdes: "U1", part: "ESP32-S3-WROOM-1", role: "Wi-Fi/BLE MCU module — keep-out under antenna" },
-      { refdes: "U2", part: "AP2112K-3.3", role: "3.3V LDO — chosen over AMS1117 (low dropout/Iq)" },
-      { refdes: "U3", part: "USBLC6-2SC6", role: "USB-C data-line ESD protection" },
-      { refdes: "U4", part: "MCP73831", role: "Single-cell LiPo charger (JST-PH input)" },
-      { refdes: "U5", part: "BME280", role: "Temp/humidity/pressure on shared I2C bus" },
-      { refdes: "R1,R2", part: "5.1k 0402", role: "USB-C CC1/CC2 pull-downs (sink advertise)" },
-    ],
-    mfgPack: [
-      "Gerbers + drill (NPTH/PTH)",
-      "BOM.csv (LCSC/Digi-Key MPNs) + CPL.csv",
-      "ERC-clean + DRC-clean screenshots",
-      "3D render + JLCPCB upload preview",
-      "Bring-up photos + REV_A_notes.md",
-    ],
-    bringup: [
-      "$ esphome run sensor-node.yaml",
-      "[boot] ESP32-S3 @ 240MHz  flash 8MB",
-      "[i2c] scan bus0 ... 0x76 BME280 OK",
-      "[adc] ch3 protected input ... 1.642 V",
-      "[wifi] associated  rssi -41 dBm",
-      ">> BOARD ALIVE",
+    name: "ESP32-S3 Wi-Fi Plant Monitor",
+    summary:
+      "A battery-powered Wi-Fi sensor node: temperature, humidity, pressure, light and soil moisture, on four layers with a proper ground plane pair.",
+    accent: "#8a5a12",
+    status: { kind: "built", label: "Built · bring-up passed" },
+    specs: ["62.5 × 44.5 mm", "4-layer", "ESP32-S3", "USB-C + LiPo"],
+    model: "/boards/mml01.glb",
+    /* one URL, declared once in REPO above — a second literal here is a
+       second thing to forget to update */
+    repo: { url: REPO.url, owner: REPO.owner, name: REPO.name },
+    images: [
+      {
+        src: "/boards/mml01-3d-top.png",
+        tag: "Populated",
+        alt: "KiCad 3D view of MML-01 fully populated, seen from above: the ESP32-S3 module with its antenna overhanging the top edge, USB-C on the left edge, BOOT and RESET buttons, BME280 and VEML7700 sensors on the right, and battery and soil connectors along the bottom",
+        caption: "Every part placed and checked for fit before a single board was ordered.",
+      },
+      {
+        src: "/boards/mml01-3d-iso.png",
+        tag: "Bare board",
+        alt: "Angled KiCad 3D view of the bare MML-01 board showing the routed copper, the module's exposed ground pad with its stitching vias, twelve gold test points and four M3 mounting holes",
+        caption: "The same board stripped back to bare copper, test points and mounting holes.",
+      },
     ],
   },
+
   {
     id: "MML-02",
-    name: "WLED High-Current Matrix Driver",
-    tagline: "Real amps, real copper, clean 5V data.",
-    problem: "ESP32 board that handles real current and LEDs.",
-    mainSkill: "High-current layout · copper pours · trace-width math · level shifting",
-    proves:
-      "Power-path trace-width sizing, wide copper pours, bulk decoupling, and a proper 3.3V→5V data level shift for WS2812B.",
-    firmware: "WLED",
-    accent: "#e8a85c", // bright copper — the high-current board
-    specs: {
-      layers: "2-layer · wide power pours + ground",
-      mcu: "ESP32-S3-WROOM-1",
-      power: "Dedicated 5V high-current input · fuse/polyfuse protected",
-      extra: "Onboard WS2812B 8×8 matrix · level-shifted data",
-    },
-    components: [
-      { refdes: "U1", part: "ESP32-S3-WROOM-1", role: "Wi-Fi MCU running the LED engine" },
-      { refdes: "U2", part: "74AHCT125", role: "3.3V→5V level shifter on the LED data line" },
-      { refdes: "J1", part: "XT30 / screw / barrel", role: "Dedicated high-current 5V input" },
-      { refdes: "D1", part: "SMBJ5.0A TVS", role: "Input transient / reverse-polarity protection" },
-      { refdes: "C1", part: "Bulk electrolytic", role: "Inrush/ripple reservoir at the input" },
-      { refdes: "R1", part: "330R series", role: "Series data resistor — tames ringing/EMI" },
-    ],
-    mfgPack: [
-      "Gerbers + drill (widened power-trace notes)",
-      "BOM.csv (MPNs) + CPL.csv centroid",
-      "ERC-clean + DRC-clean screenshots",
-      "3D render + JLCPCB upload preview",
-      "Bring-up photos + REV_A_notes.md",
-    ],
-    bringup: [
-      "$ esptool write_flash WLED.bin",
-      "[boot] ESP32-S3  WLED 0.14",
-      "[pwr] 5V rail 5.02 V  @ 3.6 A peak",
-      "[lvl] 74AHCT125 data 3v3->5v OK",
-      "[led] WS2812B 64 px  refresh 60 Hz",
-      ">> BOARD ALIVE",
-    ],
-  },
-  {
-    id: "MML-03",
-    name: "24V Industrial-Style I/O Controller",
-    tagline: "Interfaces 12/24V field equipment behind a real isolation gap.",
-    problem: "ESP32 board that interfaces 12/24V equipment safely.",
-    mainSkill: "Input protection · buck converter · opto-isolation · mixed-signal",
-    proves:
-      "24V→5V buck with a tight switching loop, reverse-polarity + TVS front-end, and opto-isolated outputs with a real isolation gap / star ground.",
-    firmware: "Tasmota / MQTT",
-    accent: "#5ec8e5", // comm cyan — the isolated I/O board
-    specs: {
-      layers: "2-layer · star ground + isolation gap",
-      mcu: "ESP32-S3-WROOM-1",
-      power: "24V screw input → buck 5V → AP2112K 3.3V",
-      extra: "PC817 opto-isolated outputs · optional RS-485",
-    },
-    components: [
-      { refdes: "U1", part: "ESP32-S3-WROOM-1", role: "MQTT / industrial control MCU" },
-      { refdes: "U2", part: "24V→5V buck", role: "Step-down with tight switching-node loop" },
-      { refdes: "U3", part: "AP2112K-3.3", role: "5V→3.3V LDO for the logic rail" },
-      { refdes: "U4", part: "PC817", role: "Opto-isolated digital outputs (across gap)" },
-      { refdes: "D1", part: "TVS + Schottky", role: "Surge clamp + reverse-polarity protection" },
-      { refdes: "J1", part: "24V screw terminal", role: "Field 12/24V input wiring" },
-    ],
-    mfgPack: [
-      "Gerbers + drill (isolation-gap callouts)",
-      "BOM.csv (MPNs) + CPL.csv centroid",
-      "ERC-clean + DRC-clean screenshots",
-      "3D render + JLCPCB upload preview",
-      "Bring-up photos + REV_A_notes.md (scope note: not safety-certified)",
-    ],
-    bringup: [
-      "$ tasmota --mqtt broker.local",
-      "[boot] ESP32-S3  Tasmota 13",
-      "[pwr] 24.1V in -> buck 5.00V -> 3.30V",
-      "[iso] PC817 out1..out4  field side OK",
-      "[mqtt] connected  topic mml/io/#",
-      ">> BOARD ALIVE",
-    ],
+    name: "Protected Field I/O Controller",
+    summary:
+      "A Wi-Fi board that safely reads 24 V equipment signals and switches real equipment — opto-isolated inputs, relay and MOSFET outputs, behind a proper isolation barrier.",
+    accent: "#3d6b8a",
+    status: { kind: "fab", label: "Ordered · in fabrication" },
+    specs: ["110 × 76 mm", "2-layer", "ESP32-S3", "9–36 VDC / 24 VAC"],
   },
 ];
 
 /* ════════════════════════════════════════════════════════════════════════
-   SKILLS — grouped the way a client thinks about a project:
-   design the circuit → lay out the board → hand off to the fab.
-   ════════════════════════════════════════════════════════════════════════ */
-export type SkillGroup = {
-  title: string;
-  tagline: string;
-  skills: { name: string; detail?: string }[];
+   CAPABILITY — what I can design, grouped the way a board gets built:
+   the circuit, the power, the field interface, the layout, the hand-off.
+
+   This is the one section on the page that argues, and it stays GENERAL on
+   purpose. A client is hiring a practice, not one board. Where a line
+   carries a number, that number is a rule held to on every board — not a
+   figure lifted off a single project.
+
+   ── UPDATE POINT ──────────────────────────────────────────────────────
+   The honesty bar is unchanged: if a line cannot be pointed at in the
+   public repo, a design review, or a Field Note, it does not go in here.
+   ══════════════════════════════════════════════════════════════════════ */
+
+export type Skill = {
+  name: string;
+  /** the qualifier that makes the claim checkable — kept short */
+  detail?: string;
 };
+
+export type SkillGroup = {
+  /** silkscreen-style designator for the eyebrow */
+  id: string;
+  title: string;
+  /** one line, lower case, no full stop: what this group is for */
+  tagline: string;
+  /** the argument — one sentence, general, never naming a board */
+  note: string;
+  skills: Skill[];
+};
+
+export const CAPABILITY_INTRO =
+  "Anyone can route a board that looks finished. Below is what sits underneath one — the circuit blocks I design, the layout rules I hold to, and the manufacturing decisions taken long before a file leaves. Where a line carries a number, that is the number I design to.";
 
 export const SKILL_GROUPS: SkillGroup[] = [
   {
+    id: "CAP-01",
     title: "Schematic & circuit design",
-    tagline: "from datasheet to a clean, readable schematic",
+    tagline: "datasheet in, a schematic another engineer can read",
+    note: "A schematic is a document before it is a netlist. If a reviewer cannot follow the circuit without opening the board file, it is not finished.",
     skills: [
-      { name: "Schematic capture", detail: "KiCad 8–10" },
-      { name: "Datasheet → schematic translation" },
-      { name: "Component selection", detail: "LCSC · Digi-Key · Mouser" },
-      { name: "ESP32-WROOM module integration", detail: "antenna keep-out" },
-      { name: "USB-C done right", detail: "5.1k CC pull-downs + USBLC6 ESD" },
-      { name: "LDO & regulator selection", detail: "AP2112K-3.3, not AMS1117" },
-      { name: "MOSFET / optocoupler driver stages" },
-      { name: "Input protection", detail: "polyfuse · TVS · reverse-polarity" },
-      { name: "Power budgeting per rail" },
+      { name: "Schematic capture", detail: "KiCad 8–10, hierarchical sheets, native files" },
+      { name: "Datasheet to schematic", detail: "reference design first, justified wherever it changes" },
+      { name: "Component selection", detail: "LCSC · Digi-Key · Mouser, stock and lifecycle checked" },
+      { name: "Wi-Fi / BLE module integration", detail: "strapping pins, boot mode, a flashing path you can reach" },
+      { name: "USB-C device ports", detail: "5.1 kΩ CC pull-downs on both pins, native USB, no bridge chip" },
+      { name: "Port ESD protection", detail: "TVS array in copper order — connector before silicon" },
+      { name: "I²C, SPI and UART buses", detail: "one pull-up pair per I²C bus, sized against the capacitance on it" },
+      { name: "ADC front ends", detail: "range measured on the bench first — an unnecessary divider only adds error" },
+      { name: "Level shifting 3.3 → 5 V", detail: "74AHCT125 class — TTL inputs take 3.3 V, outputs swing to 5 V" },
+      { name: "Sensor sub-circuits", detail: "addresses, references and enable lines resolved on paper" },
+      { name: "Power budgeting per rail", detail: "worst simultaneous draw and a sleep figure, both written down" },
     ],
   },
+
   {
+    id: "CAP-02",
+    title: "Power & protection",
+    tagline: "rails that hold up, inputs that survive the field",
+    note: "Every rail gets a written worst case before a part is chosen, and every input is designed on the assumption that the supply will one day arrive backwards.",
+    skills: [
+      { name: "LDO selection on dropout", detail: "AP2112K class on a battery rail, not an AMS1117" },
+      { name: "Step-down converters to 60 V class", detail: "populated per the datasheet design example, not improvised" },
+      { name: "Wide-input front ends", detail: "9–36 VDC or 24 VAC on one terminal, polarity-agnostic" },
+      { name: "Bridge rectifier + TVS staging", detail: "43 V standoff against a 24 VAC transformer’s 40 V unloaded peak, so it never clamps in service" },
+      { name: "Polyfuse sizing, derated", detail: "hold current at enclosure temperature, not at 25 °C" },
+      { name: "Reverse-polarity protection", detail: "P-MOSFET or bridge, chosen to suit the input" },
+      { name: "Single-cell LiPo charging", detail: "MCP73831 class, charge rate set deliberately" },
+      { name: "Automatic source hand-over", detail: "ideal-diode P-MOSFET pair, gate sized to swap inside the bulk hold-up — 50–100 ms, not a second" },
+      { name: "UVLO by EN divider", detail: "referenced to the input, never to the converter's own output" },
+      { name: "Bulk capacitance for RF bursts", detail: "a transmit peak comes out of the capacitor, not out of the regulator’s loop" },
+      { name: "Dissipation and thermal margin", detail: "worst-case watts against the package, in writing" },
+      { name: "Deep-sleep budgets", detail: "the dominant consumer named, not assumed" },
+    ],
+  },
+
+  {
+    id: "CAP-03",
+    title: "Field interface & isolation",
+    tagline: "reading and switching real equipment without letting it back in",
+    note: "The optocouplers and the relay contacts are what break the path between your equipment and this board. The copper around them is a separate return — drawn as a distance, defended on every layer, and bonded at exactly one deliberate point. Naming which of the two is doing the work is the job.",
+    skills: [
+      { name: "Opto-isolated digital inputs", detail: "PC817 class, on a shared field common" },
+      { name: "Series resistance split across parts", detail: "spreads dissipation, doubles the voltage rating" },
+      { name: "AC-capable inputs", detail: "anti-parallel diode per LED — reverse protection and half-wave" },
+      { name: "Zero-crossing hold", detail: "RC checked against the mains half-period and the receiver’s Vᴵʟ, not assumed" },
+      { name: "Relay drive stages", detail: "NPN with a base pull-down — off through boot and reset" },
+      { name: "Coil and contact protection", detail: "flyback for the coil, snubber or MOV for the contacts" },
+      { name: "Low-side MOSFET outputs", detail: "gate resistor, gate pull-down, flyback to the load rail" },
+      { name: "Field and logic returns kept apart", detail: "separate pours, a moat clear on every layer, bonded at one star point" },
+      { name: "Creepage and clearance", detail: "drawn as a distance, then verified layer by layer" },
+      { name: "Field wiring terminals", detail: "pitch and rating matched to the conductor going into them" },
+      { name: "Honest contact ratings", detail: "rated for what the board’s copper and clearances allow, not for what the relay can prints" },
+    ],
+  },
+
+  {
+    id: "CAP-04",
     title: "PCB layout",
-    tagline: "boards that route clean and run cool",
+    tagline: "2-layer and 4-layer boards that route clean and run cool",
+    note: "On four layers the return current has a path directly under the trace that carried it. On two, the pour has to be kept whole enough to give it one. Either way the board is quiet by construction, not by luck.",
     skills: [
-      { name: "2-layer & 4-layer layout", detail: "FR-4 · 1.6mm" },
-      { name: "Ground planes & return paths" },
-      { name: "Decoupling placement", detail: "tight to every VDD pin" },
-      { name: "I2C / SPI / UART bus routing" },
-      { name: "Level shifting 3.3↔5V", detail: "74AHCT125" },
-      { name: "Buck converter layout", detail: "tight switching loop" },
-      { name: "Trace widths sized to current", detail: "IPC-2221" },
-      { name: "DFM to fab rules", detail: "6/6 mil JLCPCB" },
-      { name: "Footprints & library management" },
-      { name: "Test points, mounting holes & enclosure fit" },
-      { name: "3D mechanical fit checks" },
+      { name: "2-layer and 4-layer stackups", detail: "FR-4, planned against the fab's published stackup" },
+      { name: "Signal / GND / GND / signal", detail: "no signals on either inner plane, ever" },
+      { name: "Unbroken pours and return paths", detail: "no slot under a fast trace, no return sent the long way" },
+      { name: "Decoupling placement", detail: "on four layers, every ground via 1–1.5 mm from the pin it serves" },
+      { name: "USB 2.0 differential pairs", detail: "≈90 Ω coupled geometry, length-matched, zero vias" },
+      {
+        name: "Impedance control, honestly scoped",
+        detail:
+          "coupled geometry to the fab's stackup calculator for a USB 2.0 pair; multi-gigabit, DDR and RF feedlines I refer out",
+      },
+      { name: "RF module integration", detail: "antenna off-edge, all-layer keep-out, stitching around never inside" },
+      { name: "Switching-converter layout", detail: "hot loop tiny and on one layer, feedback tapped at the output cap" },
+      { name: "Trace widths sized to current", detail: "IPC-2221, to a stated temperature rise" },
+      { name: "Copper pours, thermal vias, reliefs", detail: "heat out of the part, pads a human can still solder" },
+      { name: "Analog and digital separation", detail: "by placement — quiet parts off noisy return paths, not by cutting the pour" },
+      { name: "Test points designed in", detail: "including a through-hole UART recovery trio" },
+      { name: "Mechanical fit", detail: "holes, connector positions and part heights checked in 3D" },
+      { name: "DRC to the fab's live capability sheet", detail: "their numbers in Board Setup, not KiCad's defaults" },
     ],
   },
+
   {
-    title: "Manufacturing hand-off",
-    tagline: "the package your fab accepts first try",
+    id: "CAP-05",
+    title: "Manufacture & bring-up",
+    tagline: "everything between a finished layout and a working board",
+    note: "A board is not finished when it routes. It is finished when someone who has never spoken to me can order it, build it, and prove it works.",
     skills: [
-      { name: "Gerber generation", detail: "RS-274X" },
-      { name: "Drill files", detail: "Excellon NPTH + PTH" },
-      { name: "BOM with real part numbers", detail: "LCSC / Digi-Key" },
-      { name: "Pick-and-place / CPL files" },
-      { name: "DRC + ERC clean, with proof" },
-      { name: "JLCPCB workflow end-to-end", detail: "upload → assembly review" },
-      { name: "Clear silkscreen & assembly markings" },
-      { name: "Datasheet-grade documentation", detail: "README · REV notes · CHANGES" },
-      { name: "Git-versioned, organized hand-off" },
+      { name: "Fab rules read before routing", detail: "trace, drill, annular ring, mask dam, silk height" },
+      { name: "Footprints checked to the land pattern", detail: "third-party symbols are never trusted on sight" },
+      { name: "Project-local libraries", detail: "the project opens on a machine that has never seen mine" },
+      { name: "Silkscreen for a human with tweezers", detail: "pin 1, polarity and designators legible at ×10" },
+      { name: "Panelisation and edge instructions", detail: "sent with the order — overhang, V-score, tooling stated" },
+      { name: "Turnkey PCBA vs in-house build", detail: "quoted both ways; the crossover moves with quantity" },
+      { name: "In-house assembly", detail: "stencil, paste, hot-plate reflow, hand-soldered through-hole" },
+      { name: "Paste apertures reviewed", detail: "against the fine-pitch and exposed-pad drawings" },
+      { name: "Tariff and DDP-aware ordering", detail: "no surprise brokerage invoice after the parcel lands" },
+      { name: "Staged bring-up", detail: "unpowered checks, current-limited first power, rails, buses, firmware" },
+      { name: "Acceptance criteria with numbers", detail: "each step has a figure to hit; it passes or it does not" },
+      { name: "Documentation like a datasheet", detail: "design intent, REV notes, a change log per spin" },
     ],
   },
 ];
+
+/* ── what I turn down ──────────────────────────────────────────────────
+   A capability list with no edges is a sales page. This is the edge, and
+   it earns its place for the same reason the numbers above do.
+   ────────────────────────────────────────────────────────────────────── */
+export const CAPABILITY_LIMITS_LEAD =
+  "And the work I turn down. Knowing where the line sits is part of the service — if your board is on the far side of it, you will hear that in the quote rather than halfway through.";
+
+export const CAPABILITY_LIMITS: string[] = [
+  "Mains-voltage design",
+  "Antenna design — pre-certified modules laid out to the vendor's rules instead",
+  "Controlled impedance beyond a USB 2.0 pair",
+  "BGA and HDI — blind and buried vias, via-in-pad",
+  "Precision analog — low-noise instrumentation and sub-millivolt front ends",
+  "Motor power stages",
+  "Medical and avionics",
+  "Firmware ownership — enough to bring a board up, not enough to ship your product",
+];
+
+/** what leaves my hands at the end of every job */
+export const HANDOFF: { name: string; note: string }[] = [
+  { name: "Gerbers", note: "RS-274X, one file per layer" },
+  { name: "Drill files", note: "Excellon, plated and non-plated" },
+  { name: "BOM", note: "real manufacturer part numbers, stock checked" },
+  { name: "CPL / centroid", note: "X / Y / rotation per part" },
+  { name: "Schematic PDF", note: "reviewable without opening KiCad" },
+  { name: "Paste + stencil notes", note: "apertures checked against the datasheets" },
+  { name: "DRC + ERC proof", note: "zero errors, screenshots included" },
+  { name: "README + REV notes", note: "the design intent, and what changes next" },
+  { name: "Native KiCad source", note: "you own the project, not just the artwork" },
+];
+
+export const HANDOFF_NOTE =
+  "Quoted both ways, every time: turnkey assembly and bare-PCB-plus-stencil are different economics, and the crossover moves with quantity, part count and schedule. Running that comparison against your actual numbers is the part a fab's instant-quote page cannot do for you.";
 
 /* ════════════════════════════════════════════════════════════════════════
    THE STANDARD — premium differentiators (experience, docs, accountability)
@@ -382,8 +505,8 @@ export const STANDARD_PILLARS: Pillar[] = [
 ];
 
 export const STANDARD_STATS: { value: string; label: string }[] = [
+  { value: "2", label: "boards designed, ordered & fabricated" },
   { value: "0", label: "DRC + ERC errors shipped" },
-  { value: "10", label: "KiCad — native, versions 8–10" },
   { value: "24h", label: "fixed-quote turnaround" },
   { value: "100%", label: "money-back guarantee" },
 ];
