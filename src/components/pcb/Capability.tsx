@@ -1,29 +1,21 @@
 import Reveal from "./Reveal";
-import {
-  SKILL_GROUPS,
-  CAPABILITY_INTRO,
-  CAPABILITY_LIMITS,
-  CAPABILITY_LIMITS_LEAD,
-  HANDOFF,
-  HANDOFF_NOTE,
-} from "./pcbData";
+import { SKILL_GROUPS, CAPABILITY_INTRO, HANDOFF, HANDOFF_NOTE } from "./pcbData";
 
 /* ════════════════════════════════════════════════════════════════════════
-   Capability — the one section on the page that argues.
+   Capability — five lines about what I do, then what actually arrives.
 
-   It used to argue about six decisions taken on one board, which read as a
-   case study rather than a capability list: a client with a 24 V relay
-   board could not tell whether any of it applied to them. Now it argues
-   generally — five groups, each led by the rule that governs it, each
-   backed by the qualifiers that make a claim checkable — and the board-
-   specific detail lives where it belongs, in the public repo and in Field
-   Notes.
+   This section has now been cut twice. It began as six decisions taken on
+   one board, which read as a case study rather than a capability; it then
+   became five groups of eleven-to-fourteen skills, which read as a wall.
+   What survives is the part that argues: five titles, and the one rule
+   that governs each. The detail behind them is still in pcbData.ts and
+   still checkable — it just lives in the repo and in Field Notes now,
+   which is where someone who wants it will go looking.
 
-   Then the limits, then the deliverable, so the visit ends on what
-   actually arrives.
+   Then the deliverable, so the visit ends on what the client receives.
 
-   Server-rendered on purpose — it is static prose, so none of it needs to
-   reach the browser as JavaScript.
+   Server-rendered on purpose — static prose, so none of it needs to reach
+   the browser as JavaScript.
    ════════════════════════════════════════════════════════════════════════ */
 export default function Capability() {
   return (
@@ -38,92 +30,32 @@ export default function Capability() {
           </p>
         </Reveal>
 
-        {/* ── the five groups ──────────────────────────────────────────── */}
-        <div className="mt-10 sm:mt-14 space-y-5 sm:space-y-6">
-          {SKILL_GROUPS.map((g) => (
-            <Reveal key={g.id}>
-              <article className="card p-6 sm:p-8">
-                <span className="eyebrow">{g.id}</span>
-
-                <h3
-                  className="display mt-2.5 text-[1.6rem] sm:text-[1.9rem]"
-                  style={{ color: "var(--text)" }}
+        {/* ── the five, one line each ──────────────────────────────────── */}
+        <Reveal>
+          <div className="card mt-9 sm:mt-11 px-6 sm:px-8 py-2">
+            <ul className="m-0 p-0 list-none">
+              {SKILL_GROUPS.map((g, i) => (
+                <li
+                  key={g.id}
+                  className="py-6 grid sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] gap-x-8 gap-y-2"
+                  style={i > 0 ? { borderTop: "1px solid var(--border-soft)" } : undefined}
                 >
-                  {g.title}
-                </h3>
+                  <div>
+                    <span className="eyebrow">{g.id}</span>
+                    <h3
+                      className="display mt-1.5 text-[1.35rem] sm:text-[1.5rem]"
+                      style={{ color: "var(--text)" }}
+                    >
+                      {g.title}
+                    </h3>
+                  </div>
 
-                <p className="mt-2 text-[13px] leading-6" style={{ color: "var(--text-3)" }}>
-                  {g.tagline}
-                </p>
-
-                {/* the argument leads, and the list below supports it */}
-                <div
-                  className="mt-5 pt-5 flex gap-3"
-                  style={{ borderTop: "1px solid var(--border-soft)" }}
-                >
-                  <span
-                    aria-hidden
-                    className="mt-[8px] w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ background: "var(--accent)" }}
-                  />
                   <p
-                    className="text-[14px] leading-7 max-w-[70ch]"
+                    className="text-[14px] leading-7 m-0 self-center"
                     style={{ color: "var(--text-2)" }}
                   >
                     {g.note}
                   </p>
-                </div>
-
-                <ul className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 m-0 p-0 list-none">
-                  {g.skills.map((s) => (
-                    <li
-                      key={s.name}
-                      className="py-3"
-                      style={{ borderTop: "1px solid var(--border-soft)" }}
-                    >
-                      <span
-                        className="block text-[13.5px] font-medium leading-6"
-                        style={{ color: "var(--text)" }}
-                      >
-                        {s.name}
-                      </span>
-                      {s.detail && (
-                        <span
-                          className="block text-[12.5px] leading-5"
-                          style={{ color: "var(--text-3)" }}
-                        >
-                          {s.detail}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </Reveal>
-          ))}
-        </div>
-
-        {/* ── the edges ────────────────────────────────────────────────── */}
-        <Reveal>
-          <div className="mt-10 sm:mt-12">
-            <p
-              className="text-[14px] leading-7 max-w-[70ch]"
-              style={{ color: "var(--text-2)" }}
-            >
-              {CAPABILITY_LIMITS_LEAD}
-            </p>
-
-            <ul className="mt-5 grid sm:grid-cols-2 gap-x-8 m-0 p-0 list-none">
-              {CAPABILITY_LIMITS.map((l) => (
-                <li
-                  key={l}
-                  className="py-2.5 flex gap-3 text-[13px] leading-6"
-                  style={{ borderTop: "1px solid var(--border-soft)", color: "var(--text-3)" }}
-                >
-                  <span aria-hidden className="shrink-0" style={{ color: "var(--text-3)" }}>
-                    &times;
-                  </span>
-                  {l}
                 </li>
               ))}
             </ul>
@@ -132,7 +64,7 @@ export default function Capability() {
 
         {/* ── the deliverable ──────────────────────────────────────────── */}
         <Reveal>
-          <div className="card mt-10 sm:mt-12 p-6 sm:p-8">
+          <div className="card mt-5 sm:mt-6 p-6 sm:p-8">
             <span className="eyebrow">Every board ships with</span>
 
             <ul className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 m-0 p-0 list-none">

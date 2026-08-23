@@ -329,8 +329,13 @@ export type SkillGroup = {
 };
 
 export const CAPABILITY_INTRO =
-  "Anyone can route a board that looks finished. Below is what sits underneath one — the circuit blocks I design, the layout rules I hold to, and the manufacturing decisions taken long before a file leaves. Where a line carries a number, that is the number I design to.";
+  "Anyone can route a board that looks finished. Below is what sits underneath one — the circuit blocks I design, the layout rules I hold to, and the manufacturing decisions taken long before a file leaves.";
 
+/* NOTE: `skills` and CAPABILITY_LIMITS below are no longer rendered. Aug 2026,
+   Ray: keep Capability but cut it back to "just the main stuff" — the section
+   is now the five titles and the one-line argument each. The detail is kept
+   here rather than deleted, the same way the other retired sections are, so
+   bringing a group back is a render change and not a rewrite. */
 export const SKILL_GROUPS: SkillGroup[] = [
   {
     id: "CAP-01",
@@ -377,7 +382,7 @@ export const SKILL_GROUPS: SkillGroup[] = [
     id: "CAP-03",
     title: "Field interface & isolation",
     tagline: "reading and switching real equipment without letting it back in",
-    note: "The optocouplers and the relay contacts are what break the path between your equipment and this board. The copper around them is a separate return — drawn as a distance, defended on every layer, and bonded at exactly one deliberate point. Naming which of the two is doing the work is the job.",
+    note: "The optocouplers and the relay contacts break the path between your equipment and this board. The copper around them is a separate return — drawn as a distance, defended on every layer, bonded at one deliberate point. Naming which of the two is doing the work is the job.",
     skills: [
       { name: "Opto-isolated digital inputs", detail: "PC817 class, on a shared field common" },
       { name: "Series resistance split across parts", detail: "spreads dissipation, doubles the voltage rating" },

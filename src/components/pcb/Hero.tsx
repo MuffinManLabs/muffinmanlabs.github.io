@@ -46,15 +46,6 @@ export default function Hero() {
           manufacturing package.
         </p>
 
-        <p
-          className="mt-4 mx-auto max-w-[48ch] text-[15px] leading-7"
-          style={{ color: "var(--text-3)" }}
-        >
-          Wireless sensor nodes, battery power paths, and boards that talk to
-          real 24&nbsp;V equipment. Built in KiCad, and brought up on the bench
-          before anyone spends money on a production run.
-        </p>
-
         {/* Someone who lands here and wants to hire him had, until now, no
             way to say so above the fold — the only address on the page was in
             the footer. One primary action, one quiet one. */}
