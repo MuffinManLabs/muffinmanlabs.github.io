@@ -209,14 +209,14 @@ export const REPO_TREE: RepoDir[] = [
   {
     path: "firmware",
     name: "firmware/",
-    note: "The firmware project for the board. Layout decisions on this board were made knowing what the code would have to do at boot.",
+    note: "Not written yet — a README stating the duties the hardware hands to the firmware: no Wi-Fi transmit below 3.5 V, deep sleep at 3.0 V, and the soil-probe timing. The layout was done knowing them.",
   },
 ];
 
 /** What a visitor will actually find if they go and look. */
 export const REPO_HIGHLIGHTS: { label: string; note: string }[] = [
-  { label: "Two design reviews", note: "findings, severity and the fix that went in" },
-  { label: "An independent final audit", note: "run before the order was placed" },
+  { label: "Five review records", note: "pre-fab, placement, finishing and final layout — findings, severities, fixes" },
+  { label: "An independent second pass", note: "a separate review over the same board before it was ordered" },
   { label: "The pre-order gate list", note: "DRC / ERC clean, schematic parity, polarity checked against a pin-1 table" },
   { label: "A bring-up guide", note: "staged, with the number each step has to hit" },
   { label: "Rev B notes", note: "an honest list of what I would change next" },
