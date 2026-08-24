@@ -294,7 +294,7 @@ export const REPO_READS: { label: string; note: string; path: string }[] = [
   {
     label: "Independent second pass",
     note: "a separate review over the same board, before it was ordered",
-    path: "blob/main/docs/reviews/Design_Review_RevA_2026-07-22_Independent.md",
+    path: "blob/main/docs/reviews/Design_Review_RevA_2026-07-22_Netlist_Reextraction.md",
   },
   {
     label: "Schematic — 8 sheets (PDF)",
